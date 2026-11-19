@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="fr" style="background:#14201A;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Le Bar à Deux</title>
+<style>
+  html{ background: #14201A; min-height:100%; height:100%; overflow:hidden; }
+  :root{
+    --nuit: #14201A;
+    --bouteille: #1F3327;
+    --bouteille-clair: #2B4636;
+    --cuivre: #C08444;
+    --cuivre-vif: #E0A85F;
+    --creme: #EFE6D3;
+    --creme-fade: #B9AF9B;
+    --rouge-campari: #B5432E;
+    --ligne: rgba(239,230,211,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--nuit);
+    height:100%;
+    overflow:hidden;
+    color:var(--creme);
+    font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    line-height:1.45;
+  }
+  #app-scroll{
+    height:100vh;
+    height:100dvh;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    background:var(--nuit);
+  }
+  .sans{ font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; }
+
+  header.top{
+    padding:22px 18px 16px;
+    border-bottom:1px solid var(--ligne);
+    position:sticky; top:0; z-index:10;
+    background:var(--nuit);
+  }
+  h1{
+    margin:0 0 4px;
+    font-size:1.55rem;
+    letter-spacing:0.3px;
+    color:var(--cuivre-vif);
+    font-weight:400;
+  }
+  .soustitre{
+    margin:0; color:var(--creme-fade); font-size:0.85rem;
+  }
+
+  .personnes{
+    display:flex; gap:8px; margin-top:14px;
+  }
+  .btn-personne{
+    flex:1; padding:9px 6px; border-radius:3px;
+    border:1px solid var(--ligne);
+    background:transparent; color:var(--creme-fade);
+    font-family:inherit; font-size:0.92rem; cursor:pointer;
+  }
+  .btn-personne.actif{
+    background:var(--cuivre); color:var(--nuit); border-color:var(--cuivre);
+    font-weight:bold;
+  }
+
+  nav.onglets{
+    display:flex; border-bottom:1px solid var(--ligne);
+    background:var(--nuit);
+    position:sticky; top:96px; z-index:9;
+  }
+  nav.onglets button{
+    flex:1; padding:11px 4px; background:none; border:none;
+    color:var(--creme-fade); font-family:inherit; font-size:0.85rem;
+    border-bottom:2px solid transparent; cursor:pointer;
+  }
+  nav.onglets button.actif{
+    color:var(--cuivre-vif); border-bottom-color:var(--cuivre-vif);
+  }
+
+  main{ padding:16px; max-width:640px; margin:0 auto; padding-bottom:60px; }
+  section{ display:none; }
+  section.actif{ display:block; }
+
+  .groupe-titre{
+    color:var(--cuivre); font-size:0.78rem; text-transform:uppercase;
+    letter-spacing:1px; margin:22px 0 10px; font-family: -apple-system, sans-serif;
+  }
+  .groupe-titre:first-child{ margin-top:4px; }
+
+  .grille-ing{
+    display:grid; grid-template-columns:1fr 1fr; gap:6px 12px;
+  }
+  label.ing{
+    display:flex; align-items:center; gap:8px;
+    padding:7px 4px; border-bottom:1px solid var(--ligne);
+    font-size:0.92rem; cursor:pointer;
+  }
+  label.ing input{ accent-color:var(--cuivre); width:16px; height:16px; flex-shrink:0; }
+
+  .filtre-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px; gap:10px;
+  }
+  .filtre-bar label{ font-size:0.85rem; color:var(--creme-fade); display:flex; align-items:center; gap:6px; font-family:-apple-system,sans-serif;}
+  select, input[type=text], input[type=password], textarea{
+    background:var(--bouteille); color:var(--creme);
+    border:1px solid var(--ligne); border-radius:3px; padding:7px 8px;
+    font-family:inherit; font-size:0.9rem;
+  }
+
+  .filtre-profils{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .chip-profil{
+    padding:4px 11px; border-radius:20px; border:1px solid var(--ligne);
+    background:transparent; color:var(--creme-fade); cursor:pointer;
+    font-size:0.78rem; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  .chip-profil.actif{
+    background:var(--cuivre-vif); border-color:var(--cuivre-vif); color:var(--nuit); font-weight:bold;
+  }
+  .chip-profil:disabled{ opacity:0.35; cursor:default; }
+  .chip-profil.effacer{ border-style:dashed; color:var(--cuivre-vif); border-color:var(--cuivre); }
+
+  .profils{ display:flex; flex-wrap:wrap; gap:5px; margin:8px 0 2px; }
+  .pastille{
+    font-size:0.7rem; padding:2px 8px; border-radius:20px; border:1px solid var(--ligne);
+    color:var(--creme-fade); font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  .pastille.dominante{ border-color:var(--cuivre); color:var(--cuivre-vif); }
+  .pastille.choisi{ background:rgba(224,168,95,0.2); border-color:var(--cuivre-vif); color:var(--cuivre-vif); }
+
+  .carte.cliquable{ cursor:pointer; }
+  .actions-carte{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .actions-carte .lien-noter{ margin-top:0; }
+  .lien-noter.btn-recette{ background:var(--cuivre); color:var(--nuit); font-weight:bold; }
+
+  .recette-fond{
+    position:fixed; inset:0; z-index:60; background:rgba(8,14,10,0.78);
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .recette-fond[hidden]{ display:none; }
+  .recette-panneau{
+    position:relative; width:100%; max-width:640px;
+    max-height:92vh; max-height:92dvh; overflow-y:auto; overscroll-behavior:contain;
+    background:var(--bouteille); border:1px solid var(--ligne); border-radius:14px 14px 0 0;
+    padding:22px 18px 32px;
+  }
+  @media (min-width:700px){
+    .recette-fond{ align-items:center; }
+    .recette-panneau{ border-radius:8px; }
+  }
+  .recette-fermer{
+    position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%;
+    border:1px solid var(--ligne); background:transparent; color:var(--creme-fade);
+    font-size:1rem; cursor:pointer;
+  }
+  .recette-panneau h2{ margin:0 44px 6px 0; font-size:1.45rem; font-weight:400; color:var(--cuivre-vif); }
+  .recette-meta{ color:var(--creme-fade); font-size:0.85rem; margin:8px 0 2px; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; }
+  .portions{
+    display:flex; align-items:center; gap:10px; margin:18px 0 2px;
+    font-size:0.95rem; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  .btn-portion{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--cuivre);
+    background:transparent; color:var(--cuivre-vif); font-size:1.25rem; line-height:1; cursor:pointer;
+  }
+  #portions-nb{
+    width:58px; text-align:center; background:var(--nuit); color:var(--creme);
+    border:1px solid var(--ligne); border-radius:3px; padding:7px 4px; font-size:1.05rem; font-family:inherit;
+  }
+  #recette-dyn .groupe-titre:first-child{ margin-top:22px; }
+
+  .lien-texte{
+    background:none; border:none; padding:0; font:inherit; cursor:pointer;
+    color:var(--cuivre-vif); text-decoration:underline;
+  }
+  .ia-panneau{ margin-bottom:16px; scroll-margin-top:190px; }
+  .ia-panneau > summary{
+    list-style:none; cursor:pointer; padding:10px 14px; border:1px solid var(--cuivre); border-radius:4px;
+    color:var(--cuivre-vif); font-size:0.9rem; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  .ia-panneau > summary::-webkit-details-marker{ display:none; }
+  .ia-panneau[open] > summary{ background:rgba(192,132,68,0.12); }
+  .ia-corps{ padding:14px 2px 0; }
+  .ia-corps a{ color:var(--cuivre-vif); }
+  .ia-corps .champ{ margin-bottom:12px; }
+  .ia-corps .champ label{ display:block; font-size:0.85rem; color:var(--creme-fade); margin-bottom:5px; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; }
+  .ia-ligne{ display:flex; gap:8px; align-items:stretch; }
+  .ia-ligne input{ flex:1; min-width:0; }
+  .ia-choix{ margin:4px 0 12px; }
+  .ia-choix > summary{ cursor:pointer; color:var(--creme-fade); font-size:0.82rem; padding:6px 0; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; }
+  .ia-avance{ margin:4px 0 8px; }
+  .ia-avance > summary{ cursor:pointer; color:var(--creme-fade); font-size:0.8rem; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; }
+  .ia-erreur{
+    background:rgba(181,67,46,0.15); border:1px solid var(--rouge-campari); color:var(--creme);
+    border-radius:4px; padding:10px 12px; font-size:0.86rem; margin:12px 0;
+    font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  .ia-desc{ margin:8px 0 2px; font-size:0.9rem; color:var(--creme-fade); font-style:italic; }
+  .ia-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .ia-actions .lien-noter{ margin-top:0; }
+  .lien-noter:disabled{ opacity:0.55; cursor:default; }
+  .btn-sauver:disabled{ opacity:0.6; cursor:default; }
+  #ia-formulaire[hidden]{ display:none; }
+  table.doses{ width:100%; border-collapse:collapse; }
+  table.doses td{ padding:8px 4px; border-bottom:1px solid var(--ligne); vertical-align:baseline; }
+  table.doses td.q{ width:40%; white-space:nowrap; color:var(--cuivre-vif); font-size:1.02rem; }
+  ul.ing-simple{ margin:0; padding-left:18px; }
+  ul.ing-simple li{ margin-bottom:4px; }
+  .tag-manque{
+    margin-left:6px; font-size:0.66rem; padding:1px 7px; border-radius:20px; white-space:nowrap;
+    border:1px solid var(--rouge-campari); color:var(--rouge-campari);
+    font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  ol.etapes{ margin:0; padding-left:22px; }
+  ol.etapes li{ margin-bottom:9px; }
+  .astuce{ font-size:0.82rem; color:var(--creme-fade); font-style:italic; margin:10px 0 0; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; }
+  .recette-garniture{ margin:14px 0 0; font-size:0.92rem; }
+  .recette-garniture b{ color:var(--cuivre); font-weight:normal; text-transform:uppercase; letter-spacing:1px; font-size:0.74rem; margin-right:6px; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; }
+
+  .carte{
+    background:var(--bouteille); border:1px solid var(--ligne);
+    border-radius:4px; padding:14px 15px; margin-bottom:12px;
+  }
+  .carte.attenue{ opacity:0.55; }
+  .carte-tete{ display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
+  .carte-tete h3{ margin:0; font-size:1.12rem; font-weight:400; color:var(--creme); }
+  .badge{
+    font-size:0.68rem; padding:2px 7px; border-radius:20px; white-space:nowrap;
+    font-family:-apple-system,sans-serif; letter-spacing:0.3px;
+  }
+  .badge.ok{ background:rgba(160,196,120,0.18); color:#A0C478; }
+  .badge.presque{ background:rgba(224,168,95,0.18); color:var(--cuivre-vif); }
+  .badge.loin{ background:rgba(255,255,255,0.06); color:var(--creme-fade); }
+
+  .liste-ing{
+    margin:8px 0 6px; font-size:0.86rem; color:var(--creme-fade);
+  }
+  .liste-ing span{ display:inline-block; margin:1px 5px 1px 0; }
+  .liste-ing span.possede{ color:var(--creme); }
+  .liste-ing span.manque{ color:#8a7a5e; text-decoration:line-through; }
+  .liste-ing span.aime{ color:#A0C478; }
+  .liste-ing span.evite{ color:var(--rouge-campari); }
+  .liste-ing span.evite-fort{ color:var(--rouge-campari); font-weight:bold; text-decoration:underline; }
+
+  .alerte-evite{
+    font-size:0.78rem; color:var(--rouge-campari); margin-top:6px; font-family:-apple-system,sans-serif;
+  }
+
+  .notes-existantes{
+    margin-top:8px; font-size:0.8rem; color:var(--creme-fade); font-family:-apple-system,sans-serif;
+    display:flex; gap:14px; flex-wrap:wrap;
+  }
+  .notes-existantes b{ color:var(--cuivre-vif); }
+
+  .lien-noter{
+    margin-top:10px; background:none; border:1px solid var(--cuivre); color:var(--cuivre-vif);
+    padding:6px 12px; border-radius:3px; font-size:0.82rem; cursor:pointer; font-family:-apple-system,sans-serif;
+  }
+
+  .panneau-note{
+    margin-top:12px; padding-top:12px; border-top:1px dashed var(--ligne);
+  }
+  .panneau-note .champ{ margin-bottom:10px; }
+  .panneau-note label{ display:block; font-size:0.78rem; color:var(--creme-fade); margin-bottom:5px; font-family:-apple-system,sans-serif;}
+  .note-range{ display:flex; align-items:center; gap:10px; }
+  .note-range input[type=range]{ flex:1; accent-color:var(--cuivre); }
+  .note-valeur{ font-size:1.1rem; color:var(--cuivre-vif); min-width:34px; text-align:right; }
+  .tags-ing{ display:flex; flex-wrap:wrap; gap:6px; }
+  .tag-choix{
+    padding:5px 10px; border-radius:20px; border:1px solid var(--ligne);
+    font-size:0.78rem; cursor:pointer; background:transparent; color:var(--creme-fade); font-family:-apple-system,sans-serif;
+  }
+  .tag-choix.aime{ border-color:#A0C478; color:#A0C478; background:rgba(160,196,120,0.1); }
+  .tag-choix.evite-leger{ border-color:var(--rouge-campari); color:var(--rouge-campari); background:rgba(181,67,46,0.1); }
+  .tag-choix.evite-fort{ border-color:var(--rouge-campari); color:var(--creme); background:var(--rouge-campari); font-weight:bold; }
+  .aide-tags{ font-size:0.72rem; color:var(--creme-fade); margin-top:5px; font-family:-apple-system,sans-serif; }
+  textarea{ width:100%; min-height:50px; resize:vertical; }
+  .btn-sauver{
+    background:var(--cuivre); color:var(--nuit); border:none; padding:8px 16px;
+    border-radius:3px; font-weight:bold; cursor:pointer; font-family:-apple-system,sans-serif; font-size:0.85rem;
+  }
+  .btn-annuler{
+    background:none; border:none; color:var(--creme-fade); font-family:-apple-system,sans-serif; font-size:0.8rem;
+    cursor:pointer; margin-left:10px;
+  }
+
+  .form-ajout .champ{ margin-bottom:12px; }
+  .form-ajout label{ display:block; font-size:0.85rem; color:var(--creme-fade); margin-bottom:5px; font-family:-apple-system,sans-serif; }
+  .form-ajout input[type=text], .form-ajout textarea{ width:100%; }
+  .aide{ font-size:0.75rem; color:var(--creme-fade); margin-top:4px; font-family:-apple-system,sans-serif;}
+
+  .vide{ text-align:center; color:var(--creme-fade); padding:30px 10px; font-size:0.9rem; font-family:-apple-system,sans-serif;}
+  .chargement{ text-align:center; padding:40px 10px; color:var(--creme-fade); font-family:-apple-system,sans-serif;}
+
+  .statut-sauvegarde{
+    position:fixed; left:50%; bottom:16px; transform:translateX(-50%);
+    background:var(--rouge-campari); color:var(--creme); padding:8px 16px;
+    border-radius:20px; font-size:0.8rem; font-family:-apple-system,sans-serif;
+    opacity:0; pointer-events:none; transition:opacity 0.25s; z-index:50; max-width:88%; text-align:center;
+  }
+  .statut-sauvegarde.visible{ opacity:1; }
+</style>
+</head>
+<body style="background:#14201A;">
+<div id="app-scroll">
+
+<div id="statut-sauvegarde" class="statut-sauvegarde"></div>
+
+<header class="top">
+  <h1>Le Bar à Deux</h1>
+  <p class="soustitre">Vos bouteilles, vos goûts, les bons cocktails.</p>
+  <div class="personnes">
+    <button class="btn-personne actif" data-personne="moi">Moi</button>
+    <button class="btn-personne" data-personne="femme">Ma femme</button>
+  </div>
+</header>
+
+<nav class="onglets">
+  <button class="actif" data-onglet="bouteilles">Mes bouteilles</button>
+  <button data-onglet="cocktails">Cocktails</button>
+  <button data-onglet="ajouter">Ajouter</button>
+  <button data-onglet="sauvegarde">Sauvegarde</button>
+</nav>
+
+<main style="background:#14201A;">
+  <div id="chargement" class="chargement">Ouverture du bar…</div>
+
+  <section id="sec-bouteilles">
+    <div id="grille-ingredients"></div>
+  </section>
+
+  <section id="sec-cocktails">
+    <div class="filtre-bar">
+      <label><input type="checkbox" id="filtre-realisable" checked> Seulement réalisables</label>
+      <label><input type="checkbox" id="filtre-deteste" checked> Cacher ce que je déteste</label>
+      <select id="tri-select">
+        <option value="score">Trier : recommandés pour moi</option>
+        <option value="alpha">Trier : alphabétique</option>
+        <option value="note">Trier : mieux notés</option>
+        <option value="profil">Trier : par profil</option>
+      </select>
+    </div>
+    <div class="filtre-profils" id="filtre-profils"></div>
+
+    <details class="ia-panneau" id="ia-panneau">
+      <summary>✨ Pas trouvé votre bonheur ? Demandez à l'IA</summary>
+      <div class="ia-corps">
+        <div id="ia-cle"></div>
+        <div id="ia-formulaire" hidden>
+          <div class="champ">
+            <label for="ia-souhait">Qu'avez-vous envie de boire ?</label>
+            <textarea id="ia-souhait" placeholder="Ex. un long drink frais et pas trop sucré, avec de la menthe"></textarea>
+          </div>
+          <label class="ing"><input type="checkbox" id="ia-restreindre" checked><span id="ia-restreindre-txt"></span></label>
+          <details class="ia-choix" id="ia-choix-zone">
+            <summary>Choisir précisément les ingrédients autorisés</summary>
+            <p class="aide">Cliquez pour ne garder que certains ingrédients. Aucun choix = toutes vos bouteilles cochées.</p>
+            <div class="tags-ing" id="ia-choix"></div>
+          </details>
+          <label class="ing"><input type="checkbox" id="ia-gouts" checked><span id="ia-gouts-txt"></span></label>
+          <div style="margin-top:14px;">
+            <button type="button" class="btn-sauver" id="ia-envoyer">Trouver un cocktail</button>
+          </div>
+        </div>
+        <div id="ia-resultat" aria-live="polite"></div>
+      </div>
+    </details>
+
+    <div id="liste-cocktails"></div>
+  </section>
+
+  <section id="sec-ajouter">
+    <div class="form-ajout">
+      <div class="champ">
+        <label>Nom du cocktail</label>
+        <input type="text" id="nouveau-nom" placeholder="Ex. Ma création maison">
+      </div>
+      <div class="champ">
+        <label>Ingrédients (séparés par des virgules)</label>
+        <textarea id="nouveaux-ingredients" placeholder="Ex. rhum blanc, jus de citron vert, sucre, menthe fraîche"></textarea>
+        <p class="aide">Utilisez si possible les mêmes noms que dans l'onglet "Mes bouteilles" pour que le cocktail soit bien reconnu.</p>
+      </div>
+      <div class="champ">
+        <label>Doses (optionnel)</label>
+        <input type="text" id="nouvelles-doses" placeholder="Ex. 5 cl, 3 cl, 2 c. à café, 10 feuilles, 6 cl">
+        <p class="aide">Une dose par ingrédient, dans le même ordre, séparées par des virgules, pour pouvoir calculer les quantités selon le nombre de cocktails. Unités : cl, ml, trait, feuille, pincée, c. à café, c. à soupe, tranche, quartier, brin, goutte, g, ou un simple nombre (ex. 1 pour un blanc d'oeuf). Écrivez « compléter » pour une dose libre, et les décimales avec un point (1.5 cl).</p>
+      </div>
+      <div class="champ">
+        <label>Notes aromatiques (optionnel)</label>
+        <div class="tags-ing" id="ajout-profils"></div>
+        <p class="aide">Cochez-en jusqu'à 3 : la première est la note dominante. Vous pourrez les modifier plus bas, dans « Vos créations ».</p>
+      </div>
+      <div class="champ">
+        <label>Préparation (optionnel)</label>
+        <textarea id="nouvelles-instructions" placeholder="Ex. Piler la menthe, ajouter le reste, servir sur glace pilée."></textarea>
+      </div>
+      <button class="btn-sauver" id="btn-ajouter-cocktail">Ajouter le cocktail</button>
+    </div>
+    <div class="groupe-titre">Vos créations</div>
+    <div id="liste-perso"></div>
+  </section>
+
+  <section id="sec-sauvegarde">
+    <div class="groupe-titre">Sauvegarde en temps réel</div>
+    <div class="carte">
+      <p class="aide" style="margin-top:0;">Tant que vous ouvrez ce fichier directement dans votre navigateur (double-clic depuis le bureau), tout ce que vous cochez ou notez est enregistré automatiquement, en temps réel, dans la mémoire de ce navigateur. Si vous rouvrez le même fichier avec le même navigateur, vous retrouverez tout.</p>
+      <p class="aide">Attention : c'est propre à ce navigateur et à cet appareil. Un autre navigateur, un autre ordinateur, ou la suppression des données de navigation ne verra pas ces informations. Utilisez l'export ci-dessous pour transporter ou sauvegarder vos données ailleurs.</p>
+    </div>
+    <div class="groupe-titre">Exporter / importer</div>
+    <div class="carte">
+      <p class="aide" style="margin-top:0;">Exportez régulièrement un fichier de secours, et réimportez-le si besoin (autre navigateur, autre appareil, ou après un nettoyage).</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <button class="btn-sauver" id="btn-exporter">Exporter mes données</button>
+        <label class="btn-sauver" style="display:inline-block; cursor:pointer;">
+          Importer un fichier
+          <input type="file" id="input-importer" accept="application/json,.json" style="display:none;">
+        </label>
+      </div>
+    </div>
+  </section>
+</main>
+<a id="lien-export" style="display:none;"></a>
+
+<div id="recette-fond" class="recette-fond" hidden>
+  <div class="recette-panneau" role="dialog" aria-modal="true" aria-labelledby="recette-titre">
+    <button type="button" class="recette-fermer" id="recette-fermer" aria-label="Fermer la recette">✕</button>
+    <div id="recette-contenu"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function(){
+
+// ---------- Base de cocktails ----------
+const COCKTAILS = [
+{n:"Mojito", p:"herbacé acidulé", ing:["rhum blanc","jus de citron vert","sucre de canne","menthe fraîche","eau gazeuse"], r:{t:"muddle",v:"highball*",g:"branche de menthe",d:["5cl","3cl","2cc","10f","6cl"]}},
+{n:"Daiquiri", p:"acidulé sec", ing:["rhum blanc","jus de citron vert","sirop de sucre"], r:{t:"shake",v:"coupe",d:["4.5cl","2.5cl","1.5cl"]}},
+{n:"Margarita", p:"acidulé salé", ing:["tequila blanco","triple sec","jus de citron vert","sel"], r:{t:"shake",v:"coupe",d:["5cl","2cl","1.5cl","rim"]}},
+{n:"Cosmopolitan", p:"fruité acidulé", ing:["vodka","triple sec","jus de canneberge","jus de citron vert"], r:{t:"shake",v:"martini",g:"zeste d'orange",d:["4cl","1.5cl","3cl","1.5cl"]}},
+{n:"Old Fashioned", p:"boisé sec", ing:["whisky bourbon","sucre de canne","angostura bitters"], r:{t:"build",v:"rocks+",g:"zeste d'orange",d:["4.5cl","1cc","2t"],x:"=Dans un verre old fashioned, dissoudre le sucre avec les bitters et un trait d'eau. / Ajouter le bourbon et quelques glaçons, puis remuer 30 secondes. / Ajouter un gros glaçon et exprimer un zeste d'orange au-dessus."}},
+{n:"Manhattan", p:"boisé doux", ing:["whisky rye","vermouth rouge","angostura bitters"], r:{t:"mix",v:"coupe",g:"cerise au marasquin",d:["5cl","2cl","2t"]}},
+{n:"Negroni", p:"amer herbacé", ing:["gin","campari","vermouth rouge"], r:{t:"build",v:"rocks+",g:"tranche d'orange",d:["3cl","3cl","3cl"]}},
+{n:"Boulevardier", p:"boisé amer", ing:["whisky bourbon","campari","vermouth rouge"], r:{t:"mix",v:"rocks+",g:"zeste d'orange",d:["4.5cl","3cl","3cl"]}},
+{n:"Whiskey Sour", p:"acidulé boisé", ing:["whisky bourbon","jus de citron jaune","sirop de sucre","blanc d'oeuf"], r:{t:"shake",v:"rocks+",g:"tranche d'orange et cerise",d:["4.5cl","3cl","1.5cl","1"]}},
+{n:"Amaretto Sour", p:"gourmand acidulé", ing:["amaretto","jus de citron jaune","sirop de sucre","blanc d'oeuf"], r:{t:"shake",v:"rocks+",g:"cerise",d:["4.5cl","3cl","1cl","1"]}},
+{n:"Piña Colada", p:"crémeux fruité doux", ing:["rhum blanc","jus d'ananas","crème de coco"], r:{t:"blend",v:"hurricane*",g:"tranche d'ananas",d:["5cl","9cl","3cl"]}},
+{n:"Cuba Libre", p:"doux acidulé", ing:["rhum blanc","cola","jus de citron vert"], r:{t:"build",v:"highball+",g:"quartier de citron vert",d:["5cl","12cl","1cl"]}},
+{n:"Gin Tonic", p:"sec amer", ing:["gin","tonic","citron vert"], r:{t:"build",v:"highball+",d:["5cl","12cl","1qt"]}},
+{n:"Moscow Mule", p:"épicé acidulé", ing:["vodka","ginger beer","jus de citron vert"], r:{t:"build",v:"mug+",g:"quartier de citron vert",d:["4.5cl","12cl","1.5cl"]}},
+{n:"Caipirinha", p:"acidulé doux", ing:["cachaça","citron vert","sucre de canne"], r:{t:"muddle",v:"rocks*",d:["5cl","0.5","2cc"]}},
+{n:"Caipiroska", p:"acidulé doux", ing:["vodka","citron vert","sucre de canne"], r:{t:"muddle",v:"rocks*",d:["5cl","0.5","2cc"]}},
+{n:"Bloody Mary", p:"salé épicé", ing:["vodka","jus de tomate","jus de citron jaune","sauce worcestershire","tabasco","sel","poivre"], r:{t:"build",v:"highball+",g:"branche de céleri",d:["4.5cl","9cl","1.5cl","2t","2t","1p","1p"],x:"Ajuster le sel, le poivre et le tabasco selon votre goût."}},
+{n:"Dry Martini", p:"sec herbacé", ing:["gin","vermouth blanc"], r:{t:"mix",v:"martini",g:"olive ou zeste de citron",d:["6cl","1cl"]}},
+{n:"Vodka Martini", p:"sec", ing:["vodka","vermouth blanc"], r:{t:"mix",v:"martini",g:"olive ou zeste de citron",d:["6cl","1cl"]}},
+{n:"French Martini", p:"fruité doux", ing:["vodka","liqueur de framboise","jus d'ananas"], r:{t:"shake",v:"martini",g:"framboise",d:["4.5cl","1.5cl","1.5cl"]}},
+{n:"Lemon Drop Martini", p:"acidulé doux", ing:["vodka","triple sec","jus de citron jaune","sirop de sucre"], r:{t:"shake",v:"martini",g:"zeste de citron",d:["5cl","1.5cl","2.5cl","1.5cl"],x:"^Givrer le bord du verre avec du sucre (facultatif)."}},
+{n:"Tom Collins", p:"acidulé sec", ing:["gin","jus de citron jaune","sirop de sucre","eau gazeuse"], r:{t:"long",v:"collins+",g:"tranche de citron et cerise",d:["5cl","3cl","1.5cl","6cl"]}},
+{n:"Mai Tai", p:"acidulé gourmand", ing:["rhum blanc","rhum ambré","triple sec","jus de citron vert","sirop d'orgeat"], r:{t:"shake",v:"rocks*",g:"menthe et citron vert",d:["4cl","4cl","1.5cl","3cl","1.5cl"]}},
+{n:"Long Island Iced Tea", p:"doux acidulé", ing:["vodka","gin","rhum blanc","tequila blanco","triple sec","jus de citron jaune","cola"], r:{t:"long",v:"highball+",g:"tranche de citron",d:["1.5cl","1.5cl","1.5cl","1.5cl","1.5cl","2.5cl","6cl"]}},
+{n:"Sex on the Beach", p:"fruité doux", ing:["vodka","liqueur de pêche","jus d'orange","jus de canneberge"], r:{t:"shake",v:"highball+",g:"tranche d'orange",d:["4cl","2cl","4cl","4cl"]}},
+{n:"Tequila Sunrise", p:"fruité doux", ing:["tequila blanco","jus d'orange","sirop de grenadine"], r:{t:"build",v:"highball+",g:"tranche d'orange et cerise",d:["5cl","10cl","1.5cl"],x:"=Dans un verre highball rempli de glaçons, verser la tequila puis le jus d'orange. / Verser la grenadine lentement le long du verre : elle coule au fond et forme le dégradé. Ne pas mélanger."}},
+{n:"Paloma", p:"acidulé fruité", ing:["tequila blanco","jus de pamplemousse","eau gazeuse","citron vert"], r:{t:"build",v:"highball+",d:["5cl","6cl","4cl","0.5"]}},
+{n:"Aperol Spritz", p:"fruité amer", ing:["aperol","prosecco","eau gazeuse"], r:{t:"build",v:"vin+",g:"tranche d'orange",d:["6cl","9cl","3cl"],x:"=Dans un grand verre à vin rempli de glaçons, verser d'abord le prosecco, puis l'aperol. / Terminer avec l'eau gazeuse et mélanger délicatement une seule fois."}},
+{n:"Bellini", p:"fruité doux", ing:["prosecco","purée de pêche"], r:{t:"build",v:"flute",d:["10cl","5cl"],x:"=Verser la purée de pêche dans une flûte. / Compléter délicatement avec le prosecco très froid et mélanger à peine."}},
+{n:"Mimosa", p:"fruité acidulé", ing:["champagne","jus d'orange"], r:{t:"build",v:"flute",d:["7.5cl","7.5cl"]}},
+{n:"Kir Royal", p:"fruité doux", ing:["champagne","crème de cassis"], r:{t:"build",v:"flute",d:["10cl","1.5cl"],x:"=Verser la crème de cassis dans une flûte. / Compléter délicatement avec le champagne bien frais."}},
+{n:"French 75", p:"acidulé sec", ing:["gin","champagne","jus de citron jaune","sirop de sucre"], r:{t:"long",v:"flute",g:"zeste de citron",d:["3cl","6cl","1.5cl","1cl"]}},
+{n:"Sidecar", p:"acidulé boisé", ing:["cognac","triple sec","jus de citron jaune"], r:{t:"shake",v:"coupe",g:"zeste d'orange",d:["5cl","2cl","2cl"]}},
+{n:"Espresso Martini", p:"gourmand amer", ing:["vodka","liqueur de café","café espresso","sirop de sucre"], r:{t:"shake",v:"martini",g:"3 grains de café",d:["4.5cl","2cl","3cl","1cl"],x:"Utiliser un espresso tout juste préparé pour obtenir une belle mousse."}},
+{n:"White Russian", p:"crémeux gourmand", ing:["vodka","liqueur de café","crème fraîche"], r:{t:"build",v:"rocks+",d:["5cl","2cl","3cl"],x:"=Dans un verre old fashioned rempli de glaçons, verser la vodka puis la liqueur de café. / Verser la crème en dernier, délicatement sur le dessus, sans mélanger."}},
+{n:"Black Russian", p:"gourmand doux", ing:["vodka","liqueur de café"], r:{t:"build",v:"rocks+",d:["5cl","2cl"]}},
+{n:"Pisco Sour", p:"acidulé sec", ing:["pisco","jus de citron vert","sirop de sucre","blanc d'oeuf","angostura bitters"], r:{t:"shake",v:"coupe",d:["4.5cl","3cl","2cl","1","3t"],x:"Déposer les traits d'angostura sur la mousse plutôt que de les shaker."}},
+{n:"Screwdriver", p:"fruité doux", ing:["vodka","jus d'orange"], r:{t:"build",v:"highball+",g:"tranche d'orange",d:["5cl","10cl"]}},
+{n:"Dark 'n' Stormy", p:"épicé boisé", ing:["rhum ambré","ginger beer","jus de citron vert"], r:{t:"build",v:"highball+",g:"quartier de citron vert",d:["6cl","10cl","1cl"],x:"=Dans un verre highball rempli de glaçons, verser le ginger beer et le jus de citron vert. / Verser le rhum en dernier, délicatement sur le dessus, pour l'effet « tempête »."}},
+{n:"Hurricane", p:"fruité doux", ing:["rhum blanc","rhum ambré","jus de fruit de la passion","jus d'orange","sirop de grenadine","jus de citron vert"], r:{t:"shake",v:"hurricane+",g:"tranche d'orange et cerise",d:["4cl","4cl","4cl","2cl","1cl","2cl"]}},
+{n:"Bramble", p:"fruité acidulé", ing:["gin","jus de citron jaune","sirop de sucre","liqueur de mûre"], r:{t:"shake",v:"rocks*",g:"mûre et tranche de citron",d:["4cl","2cl","1cl","1.5cl"],x:"=Shaker le gin, le jus de citron et le sirop avec des glaçons, puis filtrer dans un verre old fashioned rempli de glace pilée. / Verser la liqueur de mûre en filet sur le dessus, sans mélanger."}},
+{n:"Godfather", p:"boisé gourmand", ing:["whisky scotch","amaretto"], r:{t:"build",v:"rocks+",d:["4.5cl","1.5cl"]}},
+{n:"Grasshopper", p:"crémeux herbacé", ing:["crème de menthe","liqueur de cacao blanc","crème fraîche"], r:{t:"shake",v:"coupe",g:"feuille de menthe",d:["3cl","3cl","3cl"]}},
+{n:"Irish Coffee", p:"gourmand crémeux", ing:["whisky irlandais","café espresso","sucre de canne","crème fraîche"], r:{t:"hot",v:"tasse",d:["4cl","10cl","2cc","3cl"],x:"=Réchauffer une tasse (ou un verre à Irish Coffee) avec de l'eau chaude, puis la vider. / Y verser le café chaud et le sucre, mélanger jusqu'à dissolution, puis ajouter le whisky. / Verser délicatement la crème sur le dos d'une cuillère pour qu'elle flotte, sans mélanger."}},
+{n:"Rusty Nail", p:"boisé doux", ing:["whisky scotch","liqueur au whisky (drambuie)"], r:{t:"build",v:"rocks+",g:"zeste de citron",d:["4.5cl","2.5cl"]}},
+{n:"Sazerac", p:"boisé herbacé", ing:["whisky rye","absinthe","sucre de canne","angostura bitters"], r:{t:"mix",v:"rocks",g:"zeste de citron",d:["5cl","rince","1cc","3t"],x:"=Remplir un verre old fashioned de glaçons pour le refroidir. / Dans un verre à mélange, écraser le sucre avec l'angostura, ajouter le rye et des glaçons, puis remuer 30 secondes. / Vider les glaçons du verre, le rincer avec l'absinthe et jeter l'excédent, puis y filtrer la préparation, sans glace. Exprimer un zeste de citron dessus."}},
+{n:"Vieux Carré", p:"boisé herbacé", ing:["whisky rye","cognac","vermouth rouge","liqueur au whisky (drambuie)","angostura bitters"], r:{t:"mix",v:"rocks+",g:"zeste de citron et cerise",d:["3cl","3cl","3cl","1cl","2t"]}},
+{n:"Aviation", p:"floral acidulé", ing:["gin","liqueur de marasquin","jus de citron jaune","crème de violette"], r:{t:"shake",v:"coupe",g:"cerise",d:["6cl","1.5cl","1.5cl","0.75cl"]}},
+{n:"Bee's Knees", p:"acidulé doux", ing:["gin","miel","jus de citron jaune"], r:{t:"shake",v:"coupe",g:"zeste de citron",d:["5cl","2cc","2.5cl"],x:"Bien dissoudre le miel dans le jus de citron avant de shaker (ou utiliser un miel liquide)."}},
+{n:"Corpse Reviver No.2", p:"acidulé herbacé", ing:["gin","triple sec","vermouth blanc","jus de citron jaune","absinthe"], r:{t:"shake",v:"coupe",d:["2.5cl","2.5cl","2.5cl","2.5cl","rince"]}},
+{n:"Last Word", p:"herbacé acidulé", ing:["gin","chartreuse verte","liqueur de marasquin","jus de citron vert"], r:{t:"shake",v:"coupe",d:["2.5cl","2.5cl","2.5cl","2.5cl"]}},
+{n:"Clover Club", p:"fruité acidulé", ing:["gin","jus de citron jaune","sirop de framboise","blanc d'oeuf"], r:{t:"shake",v:"coupe",g:"framboises",d:["5cl","1.5cl","1.5cl","1"]}},
+{n:"Kamikaze", p:"acidulé sec", ing:["vodka","triple sec","jus de citron vert"], r:{t:"shake",v:"coupe",g:"tranche de citron vert",d:["3cl","3cl","3cl"]}},
+{n:"B-52", p:"gourmand doux", ing:["liqueur de café","liqueur au baileys","triple sec"], r:{t:"layer",v:"shot",d:["2cl","2cl","2cl"]}},
+{n:"Zombie", p:"fruité acidulé", ing:["rhum blanc","rhum ambré","rhum épicé","jus de citron vert","jus d'orange","sirop de grenadine"], r:{t:"shake",v:"hurricane+",g:"menthe et tranche d'orange",d:["3cl","3cl","3cl","3cl","2cl","1cl"]}},
+{n:"Blue Lagoon", p:"fruité acidulé", ing:["vodka","curaçao bleu","citron vert","eau gazeuse"], r:{t:"build",v:"highball+",g:"tranche de citron vert",d:["4cl","2cl","0.5","8cl"]}},
+{n:"Sea Breeze", p:"fruité acidulé", ing:["vodka","jus de canneberge","jus de pamplemousse"], r:{t:"build",v:"highball+",g:"quartier de citron vert",d:["4cl","12cl","3cl"]}},
+{n:"Bay Breeze", p:"fruité doux", ing:["vodka","jus de canneberge","jus d'ananas"], r:{t:"build",v:"highball+",g:"quartier de citron vert",d:["4cl","4cl","8cl"]}},
+{n:"Gimlet", p:"acidulé sec", ing:["gin","jus de citron vert","sirop de sucre"], r:{t:"shake",v:"coupe",g:"tranche de citron vert",d:["5cl","2cl","1.5cl"]}},
+{n:"Southside", p:"herbacé acidulé", ing:["gin","jus de citron vert","sirop de sucre","menthe fraîche"], r:{t:"shake",v:"coupe",g:"feuille de menthe",d:["5cl","2.5cl","2cl","6f"],x:"Filtrer avec une passoire fine pour retenir les morceaux de menthe."}},
+{n:"Whiskey Smash", p:"herbacé acidulé boisé", ing:["whisky bourbon","jus de citron jaune","sirop de sucre","menthe fraîche"], r:{t:"shake",v:"rocks+",g:"branche de menthe",d:["5cl","2.5cl","2cl","8f"]}},
+{n:"Grog", p:"boisé doux", ing:["rhum ambré","eau chaude","miel","jus de citron jaune"], r:{t:"hot",v:"tasse",g:"tranche de citron",d:["5cl","10cl","1cs","2cl"]}},
+{n:"Hot Toddy", p:"boisé doux", ing:["whisky scotch","eau chaude","miel","jus de citron jaune"], r:{t:"hot",v:"tasse",g:"tranche de citron",d:["4cl","12cl","1cs","1.5cl"]}},
+
+// ---------- Ajouts : classiques, tiki, apéritivo & modernes ----------
+// Gin
+{n:"Gin Fizz", p:"acidulé sec", ing:["gin","jus de citron jaune","sirop de sucre","eau gazeuse"], r:{t:"long",v:"highball+",g:"tranche de citron",d:["5cl","3cl","1.5cl","6cl"]}},
+{n:"Silver Fizz", p:"acidulé sec", ing:["gin","jus de citron jaune","sirop de sucre","blanc d'oeuf","eau gazeuse"], r:{t:"long",v:"highball+",d:["5cl","3cl","1.5cl","1","6cl"]}},
+{n:"Ramos Gin Fizz", p:"crémeux floral acidulé", ing:["gin","jus de citron jaune","jus de citron vert","sirop de sucre","crème liquide","blanc d'oeuf","eau de fleur d'oranger","eau gazeuse"], r:{t:"long",v:"collins",d:["6cl","1.5cl","1.5cl","3cl","3cl","1","3gt","6cl"],x:"Shaker longuement (environ 1 minute au total) pour bien émulsionner la crème."}},
+{n:"Gin Rickey", p:"acidulé sec", ing:["gin","jus de citron vert","eau gazeuse"], r:{t:"build",v:"highball+",g:"quartier de citron vert",d:["4.5cl","1.5cl","10cl"]}},
+{n:"Gin Buck", p:"épicé acidulé", ing:["gin","jus de citron jaune","ginger ale"], r:{t:"build",v:"highball+",g:"zeste de citron",d:["5cl","1.5cl","10cl"]}},
+{n:"White Lady", p:"acidulé sec", ing:["gin","triple sec","jus de citron jaune"], r:{t:"shake",v:"coupe",d:["4cl","3cl","2cl"]}},
+{n:"Army & Navy", p:"gourmand acidulé", ing:["gin","jus de citron jaune","sirop d'orgeat"], r:{t:"shake",v:"coupe",g:"zeste de citron",d:["6cl","2cl","1.5cl"]}},
+{n:"Pink Lady", p:"fruité acidulé", ing:["gin","liqueur d'abricot","jus de citron jaune","sirop de grenadine","blanc d'oeuf"], r:{t:"shake",v:"coupe",g:"cerise",d:["4.5cl","1.5cl","1.5cl","1cl","1"]}},
+{n:"Vesper", p:"sec amer", ing:["gin","vodka","lillet blanc"], r:{t:"shake",v:"martini",g:"zeste de citron",d:["6cl","1.5cl","0.75cl"]}},
+{n:"Martinez", p:"doux herbacé", ing:["gin","vermouth rouge","liqueur de marasquin","bitters à l'orange"], r:{t:"mix",v:"coupe",g:"zeste d'orange",d:["4.5cl","4.5cl","1cl","2t"]}},
+{n:"Hanky Panky", p:"amer herbacé", ing:["gin","vermouth rouge","fernet-branca"], r:{t:"mix",v:"coupe",g:"zeste d'orange",d:["4.5cl","4.5cl","0.75cl"]}},
+{n:"Bijou", p:"herbacé doux", ing:["gin","chartreuse verte","vermouth rouge","bitters à l'orange"], r:{t:"mix",v:"coupe",g:"cerise et zeste de citron",d:["3cl","3cl","3cl","1t"]}},
+{n:"Alaska", p:"herbacé sec", ing:["gin","chartreuse jaune","bitters à l'orange"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["6cl","1.5cl","2t"]}},
+{n:"Bronx", p:"fruité herbacé", ing:["gin","vermouth rouge","vermouth blanc","jus d'orange"], r:{t:"shake",v:"coupe",d:["4.5cl","1.5cl","1.5cl","3cl"]}},
+{n:"Satan's Whiskers", p:"fruité herbacé", ing:["gin","vermouth rouge","vermouth blanc","triple sec","jus d'orange","bitters à l'orange"], r:{t:"shake",v:"coupe",g:"zeste d'orange",d:["3cl","1.5cl","1.5cl","1.5cl","3cl","1t"]}},
+{n:"Monkey Gland", p:"fruité herbacé", ing:["gin","jus d'orange","sirop de grenadine","absinthe"], r:{t:"shake",v:"coupe",d:["5cl","3cl","1cl","rince"]}},
+{n:"Twentieth Century", p:"acidulé gourmand", ing:["gin","liqueur de cacao blanc","lillet blanc","jus de citron jaune"], r:{t:"shake",v:"coupe",g:"zeste de citron",d:["4.5cl","2cl","2cl","2cl"]}},
+{n:"Casino", p:"acidulé fruité", ing:["gin","liqueur de marasquin","bitters à l'orange","jus de citron jaune"], r:{t:"shake",v:"coupe",g:"cerise",d:["6cl","1cl","2t","1cl"]}},
+{n:"Breakfast Martini", p:"fruité acidulé", ing:["gin","triple sec","jus de citron jaune","marmelade d'orange"], r:{t:"shake",v:"martini",g:"zeste d'orange",d:["5cl","1.5cl","2cl","1cs"],x:"Bien dissoudre la marmelade en shakant vigoureusement."}},
+{n:"Paradise", p:"fruité doux", ing:["gin","liqueur d'abricot","jus d'orange","jus de citron jaune"], r:{t:"shake",v:"coupe",d:["4.5cl","2.5cl","2.5cl","1cl"]}},
+{n:"Angel Face", p:"fruité boisé", ing:["gin","calvados","liqueur d'abricot"], r:{t:"shake",v:"coupe",d:["3cl","3cl","3cl"]}},
+{n:"Pink Gin", p:"sec amer", ing:["gin","angostura bitters"], r:{t:"mix",v:"coupe",d:["6cl","3t"]}},
+{n:"Dubonnet Cocktail", p:"doux amer", ing:["gin","dubonnet"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["4cl","4cl"]}},
+{n:"Obituary", p:"sec herbacé", ing:["gin","vermouth blanc","absinthe"], r:{t:"mix",v:"coupe",d:["6cl","1.5cl","0.5cl"]}},
+{n:"Blue Moon", p:"floral acidulé", ing:["gin","crème de violette","jus de citron jaune"], r:{t:"shake",v:"coupe",g:"zeste de citron",d:["5cl","1.5cl","2cl"]}},
+{n:"Cardinale", p:"amer herbacé", ing:["gin","campari","vermouth blanc"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["4.5cl","2cl","2cl"]}},
+{n:"Jasmine", p:"amer acidulé", ing:["gin","campari","triple sec","jus de citron jaune"], r:{t:"shake",v:"coupe",g:"zeste de citron",d:["4.5cl","0.75cl","0.75cl","2cl"]}},
+{n:"White Negroni", p:"amer floral", ing:["gin","suze","lillet blanc"], r:{t:"build",v:"rocks+",g:"zeste de citron",d:["3cl","3cl","3cl"]}},
+{n:"Unusual Negroni", p:"amer fruité", ing:["gin","aperol","lillet blanc"], r:{t:"build",v:"rocks+",g:"tranche d'orange",d:["3cl","3cl","3cl"]}},
+{n:"Contessa", p:"amer herbacé", ing:["gin","aperol","vermouth blanc"], r:{t:"build",v:"rocks+",g:"zeste d'orange",d:["3cl","3cl","3cl"]}},
+{n:"Left Hand", p:"amer gourmand", ing:["gin","campari","vermouth rouge","liqueur de cacao brun","angostura bitters"], r:{t:"mix",v:"coupe",g:"cerise",d:["3cl","3cl","3cl","1cl","2t"]}},
+{n:"Enzoni", p:"amer acidulé", ing:["gin","campari","jus de citron jaune","sirop de sucre"], r:{t:"shake",v:"rocks+",g:"raisin",d:["3cl","3cl","2cl","2cl"],x:"Traditionnellement, piler quelques grains de raisin dans le shaker (facultatif)."}},
+{n:"Singapore Sling", p:"fruité doux", ing:["gin","liqueur de cerise","triple sec","bénédictine","jus d'ananas","jus de citron vert","sirop de grenadine","angostura bitters"], r:{t:"shake",v:"highball+",g:"cerise et tranche d'ananas",d:["3cl","1.5cl","0.75cl","0.75cl","12cl","1.5cl","1cl","1t"]}},
+{n:"Gin Gin Mule", p:"épicé herbacé", ing:["gin","ginger beer","jus de citron vert","sirop de sucre","menthe fraîche"], r:{t:"long",v:"highball+",g:"branche de menthe",d:["4.5cl","6cl","2.5cl","2cl","8f"]}},
+{n:"Basil Smash", p:"herbacé acidulé", ing:["gin","basilic frais","jus de citron jaune","sirop de sucre"], r:{t:"shake",v:"rocks+",g:"feuille de basilic",d:["6cl","8f","3cl","2cl"],x:"^Piler le basilic avec le sirop et le jus de citron dans le shaker avant d'ajouter le gin."}},
+{n:"Red Lion", p:"fruité acidulé", ing:["gin","grand marnier","jus d'orange","jus de citron jaune"], r:{t:"shake",v:"coupe",g:"zeste d'orange",d:["3cl","3cl","1.5cl","1.5cl"]}},
+{n:"Dirty Martini", p:"salé sec", ing:["gin","vermouth blanc","olive"], r:{t:"mix",v:"martini",d:["6cl","1cl","3"],x:"Ajouter un peu de saumure d'olive pour un martini plus « dirty » (facultatif)."}},
+{n:"Raspberry Collins", p:"fruité acidulé", ing:["gin","purée de framboise","jus de citron jaune","sirop de sucre","eau gazeuse"], r:{t:"long",v:"collins+",g:"framboises",d:["5cl","3cl","2.5cl","1.5cl","6cl"]}},
+// Whisky
+{n:"Rob Roy", p:"boisé doux", ing:["whisky scotch","vermouth rouge","angostura bitters"], r:{t:"mix",v:"coupe",g:"cerise",d:["5cl","2cl","2t"]}},
+{n:"Bobby Burns", p:"boisé herbacé", ing:["whisky scotch","vermouth rouge","bénédictine"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["5cl","2.5cl","1cl"]}},
+{n:"Blood and Sand", p:"fruité boisé", ing:["whisky scotch","liqueur de cerise","vermouth rouge","jus d'orange"], r:{t:"shake",v:"coupe",g:"zeste d'orange",d:["2.5cl","2.5cl","2.5cl","2.5cl"]}},
+{n:"Affinity", p:"boisé herbacé", ing:["whisky scotch","vermouth rouge","vermouth blanc","angostura bitters"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["4.5cl","2cl","2cl","2t"]}},
+{n:"Penicillin", p:"fumé épicé acidulé", ing:["whisky scotch","whisky scotch tourbé","jus de citron jaune","sirop de miel","gingembre frais"], r:{t:"shake",v:"rocks+",g:"gingembre confit",d:["5cl","1cl","2.5cl","2cl","3tr"],x:"=Piler le gingembre dans le shaker. Ajouter le scotch, le jus de citron et le sirop de miel, puis shaker avec des glaçons 12 secondes. / Filtrer dans un verre old fashioned rempli de glaçons. / Verser le whisky tourbé en flottaison sur le dessus."}},
+{n:"Whisky Mac", p:"boisé épicé", ing:["whisky scotch","liqueur de gingembre"], r:{t:"build",v:"rocks+",d:["5cl","3cl"]}},
+{n:"Cameron's Kick", p:"boisé acidulé", ing:["whisky scotch","whisky irlandais","jus de citron jaune","sirop d'orgeat"], r:{t:"shake",v:"coupe",d:["3cl","3cl","1.5cl","1.5cl"]}},
+{n:"Japanese Highball", p:"sec boisé", ing:["whisky japonais","eau gazeuse"], r:{t:"build",v:"highball+",g:"zeste de citron",d:["4cl","12cl"],x:"=Dans un verre highball rempli de glaçons, verser le whisky. / Compléter doucement avec l'eau gazeuse glacée, le long du verre, et mélanger une seule fois, délicatement."}},
+{n:"Tipperary", p:"herbacé boisé", ing:["whisky irlandais","vermouth rouge","chartreuse verte"], r:{t:"mix",v:"coupe",d:["4.5cl","4.5cl","1.5cl"]}},
+{n:"Brooklyn", p:"boisé amer", ing:["whisky rye","vermouth blanc","liqueur de marasquin","amaro amer"], r:{t:"mix",v:"coupe",g:"cerise",d:["6cl","3cl","0.5cl","0.5cl"]}},
+{n:"Red Hook", p:"boisé doux", ing:["whisky rye","vermouth rouge","liqueur de marasquin"], r:{t:"mix",v:"coupe",g:"cerise",d:["6cl","1.5cl","1.5cl"]}},
+{n:"Greenpoint", p:"boisé herbacé", ing:["whisky rye","vermouth rouge","chartreuse jaune","angostura bitters","bitters à l'orange"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["6cl","1.5cl","1.5cl","1t","1t"]}},
+{n:"Little Italy", p:"boisé amer", ing:["whisky rye","vermouth rouge","cynar"], r:{t:"mix",v:"coupe",g:"cerise",d:["6cl","2cl","2cl"]}},
+{n:"Bensonhurst", p:"boisé amer", ing:["whisky rye","vermouth blanc","liqueur de marasquin","cynar"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["6cl","2cl","0.75cl","0.75cl"]}},
+{n:"The Slope", p:"boisé fruité", ing:["whisky rye","vermouth rouge","liqueur d'abricot","angostura bitters"], r:{t:"mix",v:"coupe",g:"cerise",d:["4.5cl","3cl","1.5cl","2t"]}},
+{n:"Black Manhattan", p:"boisé amer", ing:["whisky rye","amaro amer","angostura bitters","bitters à l'orange"], r:{t:"mix",v:"coupe",g:"cerise",d:["6cl","3cl","1t","1t"]}},
+{n:"Remember the Maine", p:"boisé herbacé", ing:["whisky rye","vermouth rouge","liqueur de cerise","absinthe"], r:{t:"mix",v:"coupe",g:"cerise",d:["6cl","2cl","1cl","rince"]}},
+{n:"De La Louisiane", p:"boisé herbacé", ing:["whisky rye","vermouth rouge","bénédictine","absinthe","angostura bitters"], r:{t:"mix",v:"coupe",g:"cerise",d:["3cl","3cl","3cl","0.5cl","2t"]}},
+{n:"Scofflaw", p:"acidulé boisé", ing:["whisky rye","vermouth blanc","jus de citron jaune","sirop de grenadine"], r:{t:"shake",v:"coupe",g:"zeste de citron",d:["4.5cl","3cl","2cl","2cl"]}},
+{n:"Ward 8", p:"fruité acidulé", ing:["whisky rye","jus de citron jaune","jus d'orange","sirop de grenadine"], r:{t:"shake",v:"coupe",g:"cerise",d:["6cl","2cl","2cl","1cl"]}},
+{n:"Improved Whiskey Cocktail", p:"boisé herbacé", ing:["whisky rye","liqueur de marasquin","absinthe","sirop de sucre","angostura bitters"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["6cl","0.5cl","rince","0.5cl","2t"]}},
+{n:"Final Ward", p:"herbacé acidulé", ing:["whisky rye","chartreuse verte","liqueur de marasquin","jus de citron jaune"], r:{t:"shake",v:"coupe",d:["2.5cl","2.5cl","2.5cl","2.5cl"]}},
+{n:"Toronto", p:"amer boisé", ing:["whisky rye","fernet-branca","sirop de sucre","angostura bitters"], r:{t:"mix",v:"coupe",g:"zeste d'orange",d:["6cl","0.75cl","0.75cl","2t"]}},
+{n:"Diamondback", p:"boisé herbacé", ing:["whisky rye","calvados","chartreuse jaune"], r:{t:"mix",v:"coupe",d:["4.5cl","2cl","2cl"]}},
+{n:"Preakness", p:"boisé herbacé", ing:["whisky rye","vermouth rouge","bénédictine","angostura bitters"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["6cl","3cl","0.75cl","1t"]}},
+{n:"Rattlesnake", p:"acidulé herbacé", ing:["whisky rye","jus de citron jaune","sirop de sucre","blanc d'oeuf","absinthe"], r:{t:"shake",v:"coupe",d:["5cl","2cl","1.5cl","1","rince"]}},
+{n:"New York Sour", p:"acidulé boisé", ing:["whisky rye","jus de citron jaune","sirop de sucre","blanc d'oeuf","vin rouge"], r:{t:"shake",v:"rocks+",d:["5cl","2.5cl","2cl","1","2cl"],x:"=Shaker le rye, le jus de citron, le sirop et le blanc d'oeuf d'abord sans glaçons (dry shake) pendant 10 secondes, puis avec des glaçons. / Filtrer dans un verre old fashioned rempli de glaçons. / Verser délicatement le vin rouge sur le dos d'une cuillère pour qu'il flotte."}},
+{n:"Trinidad Sour", p:"amer gourmand", ing:["angostura bitters","whisky rye","sirop d'orgeat","jus de citron jaune"], r:{t:"shake",v:"coupe",d:["4.5cl","1.5cl","3cl","2cl"]}},
+{n:"Paper Plane", p:"amer acidulé", ing:["whisky bourbon","aperol","amaro amer","jus de citron jaune"], r:{t:"shake",v:"coupe",d:["2.5cl","2.5cl","2.5cl","2.5cl"]}},
+{n:"Gold Rush", p:"acidulé doux", ing:["whisky bourbon","jus de citron jaune","sirop de miel"], r:{t:"shake",v:"rocks+",d:["6cl","2cl","2cl"]}},
+{n:"Brown Derby", p:"acidulé fruité", ing:["whisky bourbon","jus de pamplemousse","sirop de miel"], r:{t:"shake",v:"coupe",g:"zeste de pamplemousse",d:["6cl","3cl","1.5cl"]}},
+{n:"Revolver", p:"boisé gourmand", ing:["whisky bourbon","liqueur de café","bitters à l'orange"], r:{t:"mix",v:"coupe",g:"zeste d'orange",d:["6cl","1.5cl","2t"]}},
+{n:"Kentucky Mule", p:"épicé acidulé", ing:["whisky bourbon","ginger beer","jus de citron vert"], r:{t:"build",v:"mug+",g:"quartier de citron vert et menthe",d:["5cl","12cl","1.5cl"]}},
+{n:"Mint Julep", p:"herbacé boisé", ing:["whisky bourbon","sucre de canne","menthe fraîche","eau plate"], r:{t:"muddle",v:"gobelet*",g:"branche de menthe",d:["6cl","2cc","8f","1cl"]}},
+{n:"Kentucky Buck", p:"fruité épicé", ing:["whisky bourbon","purée de fraise","jus de citron jaune","sirop de sucre","ginger beer","angostura bitters"], r:{t:"long",v:"highball+",g:"fraise",d:["5cl","3cl","2cl","1.5cl","6cl","2t"]}},
+{n:"Fancy Free", p:"boisé doux", ing:["whisky bourbon","liqueur de marasquin","angostura bitters","bitters à l'orange"], r:{t:"mix",v:"rocks+",g:"zeste d'orange",d:["6cl","1.5cl","1t","1t"]}},
+{n:"Fanciulli", p:"boisé amer", ing:["whisky bourbon","vermouth rouge","fernet-branca"], r:{t:"mix",v:"coupe",g:"zeste d'orange",d:["6cl","3cl","0.75cl"]}},
+{n:"Vanilla Old Fashioned", p:"boisé gourmand", ing:["whisky bourbon","sirop de vanille","angostura bitters"], r:{t:"build",v:"rocks+",g:"zeste d'orange",d:["6cl","1cl","2t"]}},
+{n:"Presbyterian", p:"épicé boisé", ing:["whisky bourbon","ginger ale","eau gazeuse"], r:{t:"build",v:"highball+",g:"zeste de citron",d:["5cl","6cl","6cl"]}},
+{n:"Seelbach", p:"boisé fruité", ing:["whisky bourbon","triple sec","champagne","angostura bitters","bitters à l'orange"], r:{t:"build",v:"flute",g:"zeste d'orange et cerise",d:["3cl","1.5cl","9cl","3t","3t"],x:"=Verser le bourbon, le triple sec et les bitters dans une flûte. / Compléter délicatement avec le champagne bien frais et mélanger à peine."}},
+// Cognac, brandy, calvados
+{n:"Corpse Reviver No.1", p:"boisé doux", ing:["cognac","calvados","vermouth rouge"], r:{t:"mix",v:"coupe",d:["4cl","2cl","2cl"]}},
+{n:"Between the Sheets", p:"acidulé boisé", ing:["cognac","rhum blanc","triple sec","jus de citron jaune"], r:{t:"shake",v:"coupe",g:"zeste de citron",d:["3cl","3cl","3cl","2cl"]}},
+{n:"Champs-Élysées", p:"herbacé acidulé", ing:["cognac","chartreuse verte","jus de citron jaune","sirop de sucre","angostura bitters"], r:{t:"shake",v:"coupe",d:["6cl","2cl","2cl","1cl","1t"]}},
+{n:"Brandy Crusta", p:"acidulé boisé", ing:["cognac","triple sec","liqueur de marasquin","jus de citron jaune","angostura bitters"], r:{t:"shake",v:"coupe",g:"zeste de citron en spirale",d:["6cl","1cl","1cl","1.5cl","2t"],x:"^Givrer le bord du verre avec du sucre."}},
+{n:"Brandy Alexander", p:"crémeux gourmand", ing:["cognac","liqueur de cacao brun","crème liquide","muscade"], r:{t:"shake",v:"coupe",d:["3cl","3cl","3cl","1p"]}},
+{n:"Alexander", p:"crémeux gourmand", ing:["gin","liqueur de cacao blanc","crème liquide","muscade"], r:{t:"shake",v:"coupe",d:["3cl","3cl","3cl","1p"]}},
+{n:"Stinger", p:"herbacé boisé", ing:["cognac","crème de menthe"], r:{t:"shake",v:"coupe",d:["5cl","2cl"]}},
+{n:"Japanese Cocktail", p:"boisé gourmand", ing:["cognac","sirop d'orgeat","angostura bitters"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["6cl","1.5cl","2t"]}},
+{n:"Horse's Neck", p:"épicé boisé", ing:["cognac","ginger ale","angostura bitters","zeste de citron"], r:{t:"build",v:"highball+",d:["4cl","12cl","2t","1"]}},
+{n:"French Connection", p:"boisé gourmand", ing:["cognac","amaretto"], r:{t:"build",v:"rocks+",d:["4.5cl","2cl"]}},
+{n:"French 76", p:"acidulé sec", ing:["cognac","champagne","jus de citron jaune","sirop de sucre"], r:{t:"long",v:"flute",g:"zeste de citron",d:["3cl","6cl","1.5cl","1cl"]}},
+{n:"Chicago", p:"boisé sec", ing:["cognac","triple sec","angostura bitters","champagne"], r:{t:"mix",v:"coupe",d:["4.5cl","1cl","1t","6cl"],x:"=Givrer le bord d'une coupe avec du sucre. / Remuer le cognac, le triple sec et l'angostura avec des glaçons, puis filtrer dans la coupe. / Compléter avec le champagne."}},
+{n:"Coffee Cocktail", p:"boisé doux", ing:["cognac","porto rouge","oeuf entier","sirop de sucre"], r:{t:"shake",v:"coupe",g:"muscade râpée",d:["3cl","3cl","1","1cl"]}},
+{n:"Brandy Milk Punch", p:"crémeux boisé", ing:["cognac","lait","sirop de sucre","muscade"], r:{t:"shake",v:"highball+",d:["6cl","9cl","1.5cl","1p"]}},
+{n:"Armagnac Sour", p:"acidulé boisé", ing:["armagnac","jus de citron jaune","sirop de sucre","blanc d'oeuf"], r:{t:"shake",v:"coupe",d:["5cl","2.5cl","2cl","1"]}},
+{n:"Brandy Sour", p:"acidulé boisé", ing:["brandy","jus de citron jaune","sirop de sucre"], r:{t:"shake",v:"rocks+",g:"tranche de citron",d:["5cl","2.5cl","2cl"]}},
+{n:"Jack Rose", p:"fruité acidulé", ing:["calvados","jus de citron vert","sirop de grenadine"], r:{t:"shake",v:"coupe",d:["4.5cl","2cl","1.5cl"]}},
+{n:"Widow's Kiss", p:"herbacé boisé", ing:["calvados","chartreuse jaune","bénédictine","angostura bitters"], r:{t:"mix",v:"coupe",g:"cerise",d:["4.5cl","1.5cl","1.5cl","1t"]}},
+{n:"Calvados Cooler", p:"fruité acidulé", ing:["calvados","jus de pomme","jus de citron jaune","sirop de sucre","eau gazeuse"], r:{t:"long",v:"highball+",g:"tranche de pomme",d:["4.5cl","6cl","2cl","1.5cl","6cl"]}},
+{n:"Eggnog", p:"crémeux épicé", ing:["cognac","rhum ambré","oeuf entier","lait","crème liquide","sirop de sucre","muscade"], r:{t:"shake",v:"tasse",d:["3cl","3cl","1","9cl","3cl","2cl","1p"]}},
+// Rhum & tiki
+{n:"Hemingway Daiquiri", p:"acidulé fruité", ing:["rhum blanc","liqueur de marasquin","jus de pamplemousse","jus de citron vert"], r:{t:"shake",v:"coupe",g:"tranche de citron vert",d:["6cl","1cl","2.5cl","1.5cl"]}},
+{n:"Banana Daiquiri", p:"fruité doux", ing:["rhum blanc","liqueur de banane","jus de citron vert","sirop de sucre"], r:{t:"shake",v:"coupe",g:"tranche de banane",d:["4.5cl","2cl","2.5cl","1cl"]}},
+{n:"Mango Daiquiri", p:"fruité doux", ing:["rhum blanc","purée de mangue","jus de citron vert","sirop de sucre"], r:{t:"shake",v:"coupe",g:"tranche de mangue",d:["4.5cl","4cl","2.5cl","1cl"]}},
+{n:"Nuclear Daiquiri", p:"herbacé acidulé", ing:["rhum agricole blanc","chartreuse verte","falernum","jus de citron vert"], r:{t:"shake",v:"coupe",g:"cerise",d:["4.5cl","2cl","2cl","3cl"]}},
+{n:"Ti' Punch", p:"acidulé sec", ing:["rhum agricole blanc","sucre de canne","citron vert"], r:{t:"build",v:"rocks",d:["5cl","1cc","1qt"],x:"=Presser le quartier de citron vert dans un petit verre et ajouter le sucre de canne. / Mélanger, puis ajouter le rhum agricole (et un glaçon si vous le souhaitez)."}},
+{n:"Airmail", p:"acidulé doux", ing:["rhum ambré","jus de citron vert","miel","champagne"], r:{t:"long",v:"flute",d:["4.5cl","2.5cl","1cs","6cl"]}},
+{n:"Old Cuban", p:"herbacé acidulé", ing:["rhum ambré","jus de citron vert","sirop de sucre","menthe fraîche","angostura bitters","champagne"], r:{t:"long",v:"coupe",g:"feuille de menthe",d:["4.5cl","2.5cl","2cl","6f","2t","6cl"]}},
+{n:"El Presidente", p:"doux fruité", ing:["rhum blanc","vermouth blanc doux","triple sec","sirop de grenadine"], r:{t:"mix",v:"coupe",g:"zeste d'orange",d:["4.5cl","3cl","1cl","0.5cl"]}},
+{n:"Mary Pickford", p:"fruité doux", ing:["rhum blanc","jus d'ananas","liqueur de marasquin","sirop de grenadine"], r:{t:"shake",v:"coupe",g:"cerise",d:["6cl","6cl","0.5cl","1cl"]}},
+{n:"Jungle Bird", p:"amer fruité", ing:["rhum ambré","campari","jus d'ananas","jus de citron vert","sirop de sucre"], r:{t:"shake",v:"rocks+",g:"tranche et feuille d'ananas",d:["4.5cl","2.25cl","4.5cl","1.5cl","1.5cl"]}},
+{n:"Kingston Negroni", p:"amer boisé", ing:["rhum ambré","campari","vermouth rouge"], r:{t:"build",v:"rocks+",g:"zeste d'orange",d:["3cl","3cl","3cl"]}},
+{n:"Corn 'n' Oil", p:"épicé boisé", ing:["rhum vieux","falernum","jus de citron vert","angostura bitters"], r:{t:"build",v:"rocks+",g:"quartier de citron vert",d:["6cl","1.5cl","1cl","2t"]}},
+{n:"Queen's Park Swizzle", p:"herbacé acidulé", ing:["rhum ambré","jus de citron vert","sucre de canne","menthe fraîche","angostura bitters"], r:{t:"swizzle",v:"highball*",g:"branche de menthe",d:["6cl","2cl","2cc","8f","4t"],x:"^Piler légèrement la menthe avec le sucre et le jus de citron vert dans le verre."}},
+{n:"Painkiller", p:"fruité crémeux", ing:["rhum ambré","jus d'ananas","jus d'orange","crème de coco","muscade"], r:{t:"shake",v:"hurricane+",g:"muscade râpée et tranche d'ananas",d:["6cl","12cl","3cl","3cl","1p"]}},
+{n:"Bahama Mama", p:"fruité doux", ing:["rhum ambré","rhum épicé","liqueur de coco","jus d'ananas","jus de citron jaune","sirop de grenadine"], r:{t:"shake",v:"hurricane+",g:"cerise et tranche d'ananas",d:["2.5cl","2.5cl","2cl","9cl","1.5cl","1cl"]}},
+{n:"Blue Hawaii", p:"fruité doux", ing:["rhum blanc","vodka","curaçao bleu","jus d'ananas","sirop de sucre"], r:{t:"shake",v:"hurricane+",g:"tranche d'ananas",d:["3cl","1.5cl","1.5cl","9cl","1.5cl"]}},
+{n:"Planteur", p:"fruité doux", ing:["rhum ambré","jus d'orange","jus d'ananas","jus de citron vert","sirop de grenadine","angostura bitters"], r:{t:"shake",v:"hurricane+",g:"tranche d'orange",d:["5cl","6cl","6cl","1.5cl","1cl","2t"]}},
+{n:"Three Dots and a Dash", p:"épicé fruité", ing:["rhum vieux","rhum épicé","falernum","jus d'orange","jus de citron vert","miel","angostura bitters"], r:{t:"shake",v:"hurricane*",g:"3 cerises et tranche d'ananas",d:["3cl","1.5cl","1cl","2cl","1.5cl","1cc","1t"]}},
+{n:"Jet Pilot", p:"épicé fruité", ing:["rhum vieux","rhum épicé","jus de pamplemousse","jus de citron vert","falernum","cannelle","angostura bitters"], r:{t:"shake",v:"rocks*",g:"menthe",d:["3cl","1.5cl","2cl","1.5cl","1.5cl","1p","1t"]}},
+{n:"Navy Grog", p:"fruité acidulé", ing:["rhum blanc","rhum ambré","rhum vieux","jus de citron vert","jus de pamplemousse","miel","eau gazeuse"], r:{t:"long",v:"hurricane*",g:"menthe",d:["2.5cl","2.5cl","2.5cl","2.5cl","2.5cl","1cs","6cl"]}},
+{n:"Test Pilot", p:"épicé herbacé", ing:["rhum blanc","rhum vieux","triple sec","falernum","jus de citron vert","angostura bitters","absinthe"], r:{t:"shake",v:"rocks*",g:"menthe",d:["3cl","3cl","1.5cl","1.5cl","2cl","1t","6gt"]}},
+{n:"Cobra's Fang", p:"fruité épicé", ing:["rhum vieux","falernum","jus de fruit de la passion","jus d'orange","jus de citron vert","sirop de grenadine","angostura bitters"], r:{t:"shake",v:"hurricane+",g:"menthe",d:["6cl","1.5cl","2cl","3cl","2cl","1cl","2t"]}},
+{n:"Saturn", p:"fruité gourmand", ing:["gin","jus de citron jaune","sirop d'orgeat","falernum","jus de fruit de la passion"], r:{t:"shake",v:"rocks*",d:["4.5cl","2cl","1.5cl","1.5cl","1.5cl"]}},
+{n:"Suffering Bastard", p:"épicé acidulé", ing:["gin","cognac","jus de citron vert","angostura bitters","ginger beer"], r:{t:"long",v:"highball+",g:"menthe",d:["3cl","3cl","1.5cl","2t","8cl"]}},
+{n:"Chartreuse Swizzle", p:"herbacé fruité", ing:["chartreuse verte","falernum","jus d'ananas","jus de citron vert"], r:{t:"swizzle",v:"highball*",g:"menthe",d:["4.5cl","2cl","3cl","2cl"]}},
+{n:"Fog Cutter", p:"fruité gourmand", ing:["rhum blanc","cognac","gin","jus d'orange","jus de citron jaune","sirop d'orgeat","sherry amontillado"], r:{t:"shake",v:"hurricane*",g:"menthe",d:["4.5cl","1.5cl","1cl","3cl","3cl","1.5cl","1.5cl"],x:"=Shaker tous les ingrédients sauf le sherry avec des glaçons. / Filtrer dans un verre rempli de glace pilée. / Verser le sherry amontillado en flottaison sur le dessus."}},
+{n:"Scorpion", p:"fruité gourmand", ing:["rhum blanc","cognac","jus d'orange","jus de citron jaune","sirop d'orgeat"], r:{t:"shake",v:"hurricane*",g:"tranche d'orange",d:["6cl","3cl","4.5cl","3cl","2cl"]}},
+{n:"Illegal", p:"fumé herbacé", ing:["mezcal","rhum vieux","chartreuse jaune","falernum","jus de citron vert","blanc d'oeuf"], r:{t:"shake",v:"coupe",d:["3cl","3cl","1.5cl","1.5cl","2.5cl","1"]}},
+{n:"Rum Old Fashioned", p:"boisé sec", ing:["rhum vieux","sucre de canne","angostura bitters"], r:{t:"build",v:"rocks+",g:"zeste d'orange",d:["6cl","1cc","2t"],x:"=Dans un verre old fashioned, dissoudre le sucre avec les bitters et un trait d'eau. / Ajouter le rhum et quelques glaçons, puis remuer 30 secondes. / Ajouter un gros glaçon et exprimer un zeste d'orange au-dessus."}},
+{n:"Rum Manhattan", p:"boisé doux", ing:["rhum vieux","vermouth rouge","angostura bitters"], r:{t:"mix",v:"coupe",g:"cerise",d:["6cl","2cl","2t"]}},
+{n:"Fish House Punch", p:"fruité boisé", ing:["cognac","rhum vieux","liqueur de pêche","jus de citron jaune","sirop de sucre","eau plate"], r:{t:"build",v:"rocks+",g:"muscade râpée et tranche de citron",d:["3cl","3cl","1.5cl","3cl","2cl","6cl"],x:"=Mélanger tous les ingrédients dans un bol à punch (ou une carafe) avec un gros bloc de glace. / Laisser reposer 10 minutes, puis servir dans des verres remplis de glaçons."}},
+{n:"Batida de Coco", p:"crémeux doux", ing:["cachaça","crème de coco","sirop de sucre"], r:{t:"blend",v:"highball*",g:"noix de coco râpée",d:["5cl","6cl","1cl"]}},
+{n:"Rabo de Galo", p:"amer herbacé", ing:["cachaça","vermouth rouge","cynar"], r:{t:"build",v:"rocks+",g:"zeste d'orange",d:["4cl","2cl","2cl"]}},
+// Tequila & mezcal
+{n:"Tommy's Margarita", p:"acidulé sec", ing:["tequila blanco","jus de citron vert","sirop d'agave"], r:{t:"shake",v:"rocks+",d:["6cl","3cl","1.5cl"]}},
+{n:"Grand Margarita", p:"acidulé fruité", ing:["tequila blanco","grand marnier","jus de citron vert"], r:{t:"shake",v:"rocks+",g:"tranche de citron vert",d:["4.5cl","2cl","2.5cl"]}},
+{n:"Mezcal Margarita", p:"fumé acidulé", ing:["mezcal","triple sec","jus de citron vert","sirop d'agave"], r:{t:"shake",v:"rocks+",g:"tranche de citron vert",d:["5cl","2cl","2.5cl","1cl"]}},
+{n:"Oaxaca Old Fashioned", p:"fumé boisé", ing:["mezcal","tequila reposado","sirop d'agave","angostura bitters"], r:{t:"build",v:"rocks+",g:"zeste d'orange",d:["1.5cl","4.5cl","0.5cl","2t"],x:"=Dans un verre old fashioned, mélanger le sirop d'agave et les bitters. / Ajouter le mezcal, la tequila et un gros glaçon, puis remuer 30 secondes. / Exprimer un zeste d'orange au-dessus du verre."}},
+{n:"Naked and Famous", p:"fumé herbacé amer", ing:["mezcal","chartreuse jaune","aperol","jus de citron vert"], r:{t:"shake",v:"coupe",d:["2.5cl","2.5cl","2.5cl","2.5cl"]}},
+{n:"Division Bell", p:"fumé amer", ing:["mezcal","aperol","liqueur de marasquin","jus de citron vert"], r:{t:"shake",v:"coupe",d:["2.5cl","2.5cl","2.5cl","2.5cl"]}},
+{n:"Mezcal Negroni", p:"fumé amer", ing:["mezcal","campari","vermouth rouge"], r:{t:"build",v:"rocks+",g:"zeste d'orange",d:["3cl","3cl","3cl"]}},
+{n:"Mezcal Last Word", p:"fumé herbacé", ing:["mezcal","chartreuse verte","liqueur de marasquin","jus de citron vert"], r:{t:"shake",v:"coupe",d:["2.5cl","2.5cl","2.5cl","2.5cl"]}},
+{n:"Maximilian Affair", p:"fumé floral", ing:["mezcal","liqueur de sureau","vermouth blanc","jus de citron jaune"], r:{t:"shake",v:"coupe",g:"zeste de pamplemousse",d:["4.5cl","2cl","2cl","1.5cl"]}},
+{n:"Rosita", p:"amer boisé", ing:["tequila reposado","campari","vermouth rouge","vermouth blanc","angostura bitters"], r:{t:"mix",v:"rocks+",g:"zeste d'orange",d:["4.5cl","1.5cl","1.5cl","1.5cl","1t"]}},
+{n:"Agavoni", p:"amer herbacé", ing:["tequila blanco","campari","vermouth rouge"], r:{t:"build",v:"rocks+",g:"zeste d'orange",d:["3cl","3cl","3cl"]}},
+{n:"Siesta", p:"amer acidulé", ing:["tequila blanco","campari","jus de pamplemousse","jus de citron vert","sirop de sucre"], r:{t:"shake",v:"coupe",g:"zeste de pamplemousse",d:["4.5cl","1.5cl","3cl","1.5cl","1.5cl"]}},
+{n:"El Diablo", p:"fruité épicé", ing:["tequila blanco","crème de cassis","jus de citron vert","ginger beer"], r:{t:"long",v:"highball+",g:"quartier de citron vert",d:["4.5cl","1.5cl","1.5cl","10cl"]}},
+{n:"Batanga", p:"doux acidulé", ing:["tequila blanco","cola","jus de citron vert","sel"], r:{t:"build",v:"highball+",d:["5cl","12cl","1.5cl","rim"],x:"Traditionnellement, on mélange avec le couteau qui a servi à couper le citron vert."}},
+{n:"Ranch Water", p:"acidulé sec", ing:["tequila blanco","jus de citron vert","eau gazeuse"], r:{t:"build",v:"highball+",g:"tranche de citron vert",d:["5cl","2cl","12cl"]}},
+{n:"Mezcal Mule", p:"fumé épicé", ing:["mezcal","ginger beer","jus de citron vert"], r:{t:"build",v:"mug+",g:"quartier de citron vert",d:["4.5cl","12cl","1.5cl"]}},
+{n:"Matador", p:"fruité acidulé", ing:["tequila blanco","jus d'ananas","jus de citron vert"], r:{t:"shake",v:"rocks+",g:"tranche d'ananas",d:["4.5cl","9cl","1.5cl"]}},
+{n:"Bloody Maria", p:"salé épicé", ing:["tequila blanco","jus de tomate","jus de citron jaune","sauce worcestershire","tabasco","sel","poivre"], r:{t:"build",v:"highball+",g:"branche de céleri",d:["4.5cl","9cl","1.5cl","2t","2t","1p","1p"],x:"Ajuster le sel, le poivre et le tabasco selon votre goût."}},
+// Apéritivo, vins, bulles & bas degré
+{n:"Americano", p:"amer doux", ing:["campari","vermouth rouge","eau gazeuse"], r:{t:"build",v:"highball+",g:"tranche d'orange",d:["3cl","3cl","6cl"]}},
+{n:"Negroni Sbagliato", p:"amer doux", ing:["campari","vermouth rouge","prosecco"], r:{t:"build",v:"rocks+",g:"tranche d'orange",d:["3cl","3cl","6cl"]}},
+{n:"Garibaldi", p:"amer fruité", ing:["campari","jus d'orange"], r:{t:"build",v:"highball+",g:"tranche d'orange",d:["4.5cl","12cl"]}},
+{n:"Bicicletta", p:"amer sec", ing:["campari","vin blanc sec","eau gazeuse"], r:{t:"build",v:"vin+",g:"tranche d'orange",d:["4cl","9cl","6cl"]}},
+{n:"Old Pal", p:"amer boisé", ing:["whisky rye","campari","vermouth blanc"], r:{t:"mix",v:"coupe",g:"zeste d'orange",d:["3cl","3cl","3cl"]}},
+{n:"Campari Spritz", p:"amer fruité", ing:["campari","prosecco","eau gazeuse"], r:{t:"build",v:"vin+",g:"tranche d'orange",d:["6cl","9cl","3cl"],x:"=Dans un grand verre à vin rempli de glaçons, verser d'abord le prosecco, puis le campari. / Terminer avec l'eau gazeuse et mélanger délicatement une seule fois."}},
+{n:"Hugo Spritz", p:"floral herbacé", ing:["liqueur de sureau","prosecco","eau gazeuse","menthe fraîche"], r:{t:"build",v:"vin+",g:"branche de menthe",d:["4cl","9cl","3cl","6f"]}},
+{n:"St-Germain Spritz", p:"floral fruité", ing:["liqueur de sureau","prosecco","eau gazeuse"], r:{t:"build",v:"vin+",g:"zeste de citron",d:["4cl","9cl","3cl"]}},
+{n:"Cynar Spritz", p:"amer herbacé", ing:["cynar","prosecco","eau gazeuse"], r:{t:"build",v:"vin+",g:"tranche d'orange",d:["6cl","9cl","3cl"]}},
+{n:"Limoncello Spritz", p:"acidulé doux", ing:["limoncello","prosecco","eau gazeuse"], r:{t:"build",v:"vin+",g:"tranche de citron",d:["6cl","9cl","3cl"]}},
+{n:"Pimm's Cup", p:"herbacé fruité", ing:["pimm's","limonade","concombre","menthe fraîche","jus de citron jaune"], r:{t:"build",v:"highball+",g:"tranche d'orange et fraise",d:["5cl","10cl","3tr","6f","1.5cl"],x:"Ajouter les tranches de concombre et la menthe en dernier."}},
+{n:"Aperol Sour", p:"amer acidulé", ing:["aperol","jus de citron jaune","sirop de sucre","blanc d'oeuf"], r:{t:"shake",v:"rocks+",g:"tranche d'orange",d:["6cl","2.5cl","1cl","1"]}},
+{n:"Cynar Sour", p:"amer acidulé", ing:["cynar","jus de citron jaune","sirop de sucre","blanc d'oeuf"], r:{t:"shake",v:"coupe",d:["6cl","2.5cl","1cl","1"]}},
+{n:"Bitter Giuseppe", p:"amer herbacé", ing:["cynar","vermouth rouge","jus de citron jaune","bitters à l'orange"], r:{t:"shake",v:"rocks+",g:"zeste de citron",d:["4.5cl","4.5cl","1cl","2t"]}},
+{n:"Rome with a View", p:"amer acidulé", ing:["campari","vermouth blanc","jus de citron jaune","sirop de sucre","eau gazeuse"], r:{t:"long",v:"highball+",g:"zeste de citron",d:["3cl","3cl","2cl","1.5cl","6cl"]}},
+{n:"Fernet & Coke", p:"amer herbacé", ing:["fernet-branca","cola"], r:{t:"build",v:"highball+",d:["5cl","12cl"]}},
+{n:"Hard Start", p:"herbacé amer", ing:["fernet-branca","crème de menthe"], r:{t:"build",v:"rocks+",d:["4cl","2cl"]}},
+{n:"Bamboo", p:"sec herbacé", ing:["sherry fino","vermouth blanc","bitters à l'orange","angostura bitters"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["4.5cl","4.5cl","1t","1t"]}},
+{n:"Adonis", p:"doux herbacé", ing:["sherry fino","vermouth rouge","bitters à l'orange"], r:{t:"mix",v:"coupe",g:"zeste d'orange",d:["6cl","3cl","2t"]}},
+{n:"Sherry Cobbler", p:"fruité doux", ing:["sherry amontillado","sirop de sucre","jus d'orange"], r:{t:"shake",v:"gobelet*",g:"tranche d'orange, fruits rouges et menthe",d:["7.5cl","1.5cl","2cl"]}},
+{n:"Coronation", p:"sec herbacé", ing:["sherry fino","vermouth blanc","liqueur de marasquin","bitters à l'orange"], r:{t:"mix",v:"coupe",g:"zeste de citron",d:["4.5cl","4.5cl","0.5cl","2t"]}},
+{n:"Porto Flip", p:"crémeux doux", ing:["porto rouge","oeuf entier","sirop de sucre","muscade"], r:{t:"shake",v:"coupe",d:["6cl","1","1cl","1p"]}},
+{n:"Porto Tonic", p:"fruité amer", ing:["porto rouge","tonic"], r:{t:"build",v:"highball+",g:"tranche de citron",d:["6cl","12cl"]}},
+{n:"Kir", p:"fruité sec", ing:["vin blanc sec","crème de cassis"], r:{t:"build",v:"vin",d:["9cl","1.5cl"],x:"=Verser la crème de cassis dans un grand verre à vin. / Ajouter le vin blanc très frais et mélanger délicatement."}},
+{n:"Communard", p:"fruité doux", ing:["vin rouge","crème de cassis"], r:{t:"build",v:"vin",d:["9cl","2cl"],x:"=Verser la crème de cassis dans un grand verre à vin. / Ajouter le vin rouge et mélanger délicatement."}},
+{n:"Rossini", p:"fruité doux", ing:["prosecco","purée de fraise"], r:{t:"build",v:"flute",g:"fraise",d:["10cl","5cl"]}},
+{n:"Death in the Afternoon", p:"herbacé sec", ing:["absinthe","champagne"], r:{t:"build",v:"flute",d:["3cl","9cl"],x:"=Verser l'absinthe dans une flûte. / Compléter avec le champagne bien frais jusqu'à obtenir un aspect opalescent."}},
+{n:"Green Beast", p:"herbacé acidulé", ing:["pastis","jus de citron vert","sirop de sucre","eau plate","concombre"], r:{t:"shake",v:"highball+",g:"tranche de concombre",d:["4cl","2.5cl","2cl","6cl","3tr"],x:"^Piler le concombre dans le shaker avant d'ajouter le reste."}},
+{n:"Mauresque", p:"herbacé gourmand", ing:["pastis","sirop d'orgeat","eau plate"], r:{t:"build",v:"highball+",d:["2cl","1.5cl","10cl"]}},
+{n:"Tomate", p:"herbacé doux", ing:["pastis","sirop de grenadine","eau plate"], r:{t:"build",v:"highball+",d:["2cl","1cl","10cl"]}},
+{n:"Perroquet", p:"herbacé doux", ing:["pastis","crème de menthe","eau plate"], r:{t:"build",v:"highball+",d:["2cl","1.5cl","10cl"]}},
+// Vodka
+{n:"Salty Dog", p:"fruité salé", ing:["vodka","jus de pamplemousse","sel"], r:{t:"build",v:"highball+",d:["5cl","12cl","rim"]}},
+{n:"Greyhound", p:"fruité amer", ing:["vodka","jus de pamplemousse"], r:{t:"build",v:"highball+",g:"zeste de pamplemousse",d:["5cl","12cl"]}},
+{n:"Godmother", p:"gourmand doux", ing:["vodka","amaretto"], r:{t:"build",v:"rocks+",d:["4.5cl","2.5cl"]}},
+{n:"Woo Woo", p:"fruité doux", ing:["vodka","liqueur de pêche","jus de canneberge"], r:{t:"shake",v:"highball+",d:["4cl","2cl","9cl"]}},
+{n:"Fuzzy Navel", p:"fruité doux", ing:["liqueur de pêche","jus d'orange"], r:{t:"build",v:"highball+",g:"tranche d'orange",d:["5cl","10cl"]}},
+{n:"Cape Codder", p:"fruité acidulé", ing:["vodka","jus de canneberge","jus de citron vert"], r:{t:"build",v:"highball+",g:"quartier de citron vert",d:["5cl","12cl","1cl"]}},
+{n:"Chi Chi", p:"fruité crémeux", ing:["vodka","jus d'ananas","crème de coco"], r:{t:"blend",v:"hurricane*",g:"tranche d'ananas",d:["4.5cl","9cl","3cl"]}},
+{n:"Vodka Gimlet", p:"acidulé sec", ing:["vodka","jus de citron vert","sirop de sucre"], r:{t:"shake",v:"coupe",g:"tranche de citron vert",d:["5cl","2cl","1.5cl"]}},
+{n:"Flying Grasshopper", p:"herbacé gourmand", ing:["vodka","crème de menthe","liqueur de cacao blanc"], r:{t:"shake",v:"coupe",d:["3cl","3cl","3cl"]}},
+{n:"Green Russian", p:"fruité doux", ing:["vodka","liqueur de melon"], r:{t:"build",v:"rocks+",d:["5cl","3cl"]}},
+{n:"Mudslide", p:"gourmand crémeux", ing:["vodka","liqueur de café","liqueur au baileys","crème liquide"], r:{t:"shake",v:"rocks+",d:["3cl","3cl","3cl","3cl"]}},
+{n:"Colorado Bulldog", p:"gourmand crémeux", ing:["vodka","liqueur de café","crème liquide","cola"], r:{t:"long",v:"highball+",d:["3cl","3cl","3cl","6cl"]}},
+{n:"Toasted Almond", p:"gourmand crémeux", ing:["amaretto","liqueur de café","crème liquide"], r:{t:"shake",v:"rocks+",d:["3cl","3cl","3cl"]}},
+{n:"Purple Rain", p:"fruité doux", ing:["vodka","curaçao bleu","liqueur de framboise","jus de citron jaune","limonade"], r:{t:"long",v:"highball+",d:["3cl","2cl","2cl","2cl","8cl"]}},
+{n:"Adios Motherfucker", p:"doux acidulé", ing:["vodka","gin","rhum blanc","tequila blanco","curaçao bleu","jus de citron jaune","limonade"], r:{t:"long",v:"highball+",g:"tranche de citron",d:["1.5cl","1.5cl","1.5cl","1.5cl","1.5cl","2.5cl","6cl"]}},
+{n:"Tokyo Iced Tea", p:"fruité doux", ing:["vodka","gin","rhum blanc","tequila blanco","liqueur de melon","jus de citron jaune","limonade"], r:{t:"long",v:"highball+",g:"cerise",d:["1.5cl","1.5cl","1.5cl","1.5cl","1.5cl","2.5cl","6cl"]}},
+// Liqueurs & divers
+{n:"Amaretto Stone Sour", p:"gourmand acidulé", ing:["amaretto","jus de citron jaune","jus d'orange"], r:{t:"shake",v:"rocks+",g:"tranche d'orange et cerise",d:["4.5cl","2.5cl","3cl"]}},
+{n:"Midori Sour", p:"fruité acidulé", ing:["liqueur de melon","jus de citron jaune","sirop de sucre","eau gazeuse"], r:{t:"long",v:"highball+",g:"cerise",d:["4.5cl","3cl","1.5cl","6cl"]}},
+{n:"Frangelico Sour", p:"gourmand acidulé", ing:["liqueur de noisette","jus de citron jaune","sirop de sucre","blanc d'oeuf"], r:{t:"shake",v:"rocks+",g:"noisette",d:["6cl","3cl","1cl","1"]}},
+{n:"Nutty Irishman", p:"gourmand crémeux", ing:["liqueur de noisette","liqueur au baileys"], r:{t:"build",v:"rocks+",d:["3cl","3cl"]}},
+{n:"Slippery Nipple", p:"herbacé crémeux", ing:["sambuca","liqueur au baileys"], r:{t:"layer",v:"shot",d:["2cl","2cl"]}},
+{n:"Baileys Coffee", p:"gourmand crémeux", ing:["café filtre","liqueur au baileys","crème liquide"], r:{t:"hot",v:"tasse",d:["12cl","4cl","3cl"],x:"=Verser le café chaud dans une tasse et ajouter le Baileys. / Verser délicatement la crème sur le dos d'une cuillère pour qu'elle flotte, sans mélanger."}},
+{n:"Alabama Slammer", p:"fruité doux", ing:["southern comfort","amaretto","liqueur d'abricot","jus d'orange","sirop de grenadine"], r:{t:"shake",v:"highball+",g:"tranche d'orange et cerise",d:["3cl","3cl","1.5cl","6cl","1cl"]}},
+{n:"Scarlett O'Hara", p:"fruité acidulé", ing:["southern comfort","jus de canneberge","jus de citron vert"], r:{t:"shake",v:"coupe",g:"quartier de citron vert",d:["4.5cl","9cl","1.5cl"]}},
+{n:"Pisco Punch", p:"fruité acidulé", ing:["pisco","jus d'ananas","jus de citron jaune","sirop de sucre"], r:{t:"shake",v:"rocks+",g:"tranche d'ananas",d:["6cl","3cl","3cl","2cl"]}},
+{n:"Aquavit Sour", p:"acidulé herbacé", ing:["aquavit","jus de citron jaune","sirop de sucre","blanc d'oeuf"], r:{t:"shake",v:"coupe",g:"zeste de citron",d:["5cl","2.5cl","2cl","1"]}},
+];
+
+// Groupes pour l'affichage de la checklist des bouteilles
+const GROUPES = {
+  "Alcools blancs": ["rhum blanc","rhum agricole blanc","vodka","gin","gin old tom","tequila blanco","mezcal","cachaça","pisco","aquavit"],
+  "Alcools bruns": ["rhum ambré","rhum vieux","rhum épicé","whisky bourbon","whisky rye","whisky scotch","whisky scotch tourbé","whisky irlandais","whisky japonais","cognac","armagnac","calvados","brandy","tequila reposado"],
+  "Apéritifs amers": ["campari","aperol","cynar","suze","picon","fernet-branca","amaro amer","pimm's"],
+  "Vermouths & vins apéritifs": ["vermouth rouge","vermouth blanc","vermouth blanc doux","lillet blanc","dubonnet","sherry fino","sherry amontillado","porto rouge"],
+  "Vins & bulles": ["champagne","prosecco","vin blanc sec","vin rouge"],
+  "Liqueurs d'agrumes & de fruits": ["triple sec","grand marnier","curaçao bleu","liqueur d'abricot","liqueur de pêche","liqueur de cerise","liqueur de framboise","liqueur de mûre","liqueur de melon","liqueur de coco","liqueur de banane","crème de cassis","southern comfort","limoncello"],
+  "Liqueurs herbacées & crèmes": ["amaretto","liqueur de café","liqueur au baileys","liqueur au whisky (drambuie)","bénédictine","chartreuse verte","chartreuse jaune","crème de menthe","crème de violette","liqueur de cacao blanc","liqueur de cacao brun","liqueur de marasquin","liqueur de sureau","liqueur de gingembre","liqueur de noisette","sambuca","absinthe","pastis","falernum"],
+  "Bitters": ["angostura bitters","bitters à l'orange"],
+  "Jus & purées": ["jus de citron vert","jus de citron jaune","jus d'orange","jus d'ananas","jus de canneberge","jus de pamplemousse","jus de fruit de la passion","jus de tomate","jus de pomme","purée de pêche","purée de fraise","purée de mangue","purée de framboise"],
+  "Sirops & sucrants": ["sirop de sucre","sucre de canne","sirop de grenadine","sirop d'orgeat","sirop de framboise","sirop de gingembre","sirop de vanille","sirop d'agave","miel","sirop de miel"],
+  "Bulles, sodas & softs": ["tonic","ginger beer","ginger ale","cola","eau gazeuse","eau plate","eau chaude","limonade","soda au pamplemousse"],
+  "Café, thé & laitages": ["café espresso","café filtre","thé noir infusé","lait","crème fraîche","crème liquide","crème de coco"],
+  "Aromates & garnitures": ["menthe fraîche","basilic frais","romarin","concombre","gingembre frais","piment","cannelle","muscade","sel","poivre","sel de céleri","sauce worcestershire","tabasco","blanc d'oeuf","oeuf entier","zeste d'orange","zeste de citron","cerise au marasquin","olive","marmelade d'orange","eau de fleur d'oranger","citron vert"]
+};
+const TOUS_ING = Object.values(GROUPES).flat();
+
+// Notes aromatiques : le champ p d'un cocktail liste ses notes, la première étant la dominante
+const PROFILS_DISPO = ["fruité","acidulé","amer","sec","doux","herbacé","floral","épicé","boisé","fumé","crémeux","gourmand","salé"];
+const PROFILS_MAX = 3;
+function profilsDe(c){
+  return c.p ? c.p.split(" ").filter(p=>PROFILS_DISPO.includes(p)) : [];
+}
+
+let etat = {
+  possedes: [],
+  perso: [],
+  notesMoi: {},
+  notesFemme: {},
+  personneActive: "moi"
+};
+let ongletActuel = "bouteilles";
+const profilsFiltres = new Set();
+
+const PREFIXE = "bar-a-deux:";
+
+async function chargerTout(){
+  try{
+    etat.possedes = lireCle("ingredients-possedes") || [];
+    etat.perso = lireCle("cocktails-perso") || [];
+    etat.notesMoi = lireCle("notes-moi") || {};
+    etat.notesFemme = lireCle("notes-femme") || {};
+    const portions = lireCle("portions");
+    if(Number.isInteger(portions) && portions >= 1 && portions <= 99) nbPortions = portions;
+    const cleIA = lireCle("gemini-cle");
+    if(typeof cleIA === "string") IA.cle = cleIA;
+    const modeleIA = lireCle("gemini-modele");
+    if(typeof modeleIA === "string" && MODELE_IA_VALIDE.test(modeleIA)) IA.modele = modeleIA;
+  }catch(e){ console.error("Erreur de chargement", e); }
+  document.getElementById("chargement").style.display = "none";
+  rendreBouteilles();
+  rendreFiltreProfils();
+  rendreCocktails();
+  rendrePerso();
+  rendreCleIA();
+  majFormulaireIA();
+}
+
+function lireCle(cle){
+  try{
+    const brut = localStorage.getItem(PREFIXE + cle);
+    return brut ? JSON.parse(brut) : null;
+  }catch(e){
+    console.warn("Lecture locale impossible:", cle, e);
+    return null;
+  }
+}
+
+let avertissementAffiche = false;
+
+function ecrireCle(cle, val){
+  try{
+    localStorage.setItem(PREFIXE + cle, JSON.stringify(val));
+  }catch(e){
+    console.warn("Sauvegarde locale impossible:", cle, e);
+    if(!avertissementAffiche){
+      avertissementAffiche = true;
+      afficherStatut("La sauvegarde automatique du navigateur ne fonctionne pas ici (mémoire pleine, navigation privée, ou aperçu dans Claude plutôt que le fichier ouvert directement). Utilisez l'onglet Sauvegarde pour exporter vos données.", true);
+    }
+  }
+}
+
+async function exporterDonnees(){
+  const paquet = {
+    version: 1,
+    exporteLe: new Date().toISOString(),
+    ingredientsPossedes: etat.possedes,
+    cocktailsPerso: etat.perso,
+    notesMoi: etat.notesMoi,
+    notesFemme: etat.notesFemme
+  };
+  const blob = new Blob([JSON.stringify(paquet, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const lien = document.getElementById("lien-export");
+  lien.href = url;
+  const date = new Date().toISOString().slice(0,10);
+  lien.download = `bar-a-deux-sauvegarde-${date}.json`;
+  lien.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+function importerDonnees(fichier){
+  const lecteur = new FileReader();
+  lecteur.onload = (e)=>{
+    try{
+      const paquet = JSON.parse(e.target.result);
+      etat.possedes = paquet.ingredientsPossedes || [];
+      etat.perso = paquet.cocktailsPerso || [];
+      etat.notesMoi = paquet.notesMoi || {};
+      etat.notesFemme = paquet.notesFemme || {};
+      ecrireCle("ingredients-possedes", etat.possedes);
+      ecrireCle("cocktails-perso", etat.perso);
+      ecrireCle("notes-moi", etat.notesMoi);
+      ecrireCle("notes-femme", etat.notesFemme);
+      rendreBouteilles();
+      rendreCocktails();
+      rendrePerso();
+      majFormulaireIA();
+      afficherStatut("Import réussi : vos données ont été restaurées.", false);
+    }catch(err){
+      afficherStatut("Ce fichier n'a pas pu être lu — vérifiez qu'il s'agit bien d'un export de cette application.", true);
+    }
+  };
+  lecteur.readAsText(fichier);
+}
+
+let minuteurStatut = null;
+function afficherStatut(message, persistant){
+  const el = document.getElementById("statut-sauvegarde");
+  el.textContent = message;
+  el.classList.add("visible");
+  clearTimeout(minuteurStatut);
+  if(!persistant){
+    minuteurStatut = setTimeout(()=> el.classList.remove("visible"), 4500);
+  } else {
+    el.style.cursor = "pointer";
+    el.onclick = ()=> el.classList.remove("visible");
+  }
+}
+
+function notesActives(){ return etat.personneActive === "moi" ? etat.notesMoi : etat.notesFemme; }
+function toutesLesCocktails(){ return COCKTAILS.concat(etat.perso); }
+
+function ingredientsAimesEvites(){
+  const notes = notesActives();
+  const aime = new Set(), evite = new Map(); // ingrédient -> niveau max (1 = un peu, 2 = beaucoup)
+  Object.values(notes).forEach(n=>{
+    (n.aime||[]).forEach(i=>aime.add(i));
+    (n.evite||[]).forEach(entry=>{
+      // compatibilité avec l'ancien format (simple chaîne = niveau 1)
+      const ing = typeof entry === "string" ? entry : entry.ing;
+      const niveau = typeof entry === "string" ? 1 : (entry.niveau||1);
+      evite.set(ing, Math.max(evite.get(ing)||0, niveau));
+    });
+  });
+  return {aime, evite};
+}
+
+// ---------- Onglet Bouteilles ----------
+function rendreBouteilles(){
+  const zone = document.getElementById("grille-ingredients");
+  zone.innerHTML = "";
+  Object.entries(GROUPES).forEach(([groupe, liste])=>{
+    const titre = document.createElement("div");
+    titre.className = "groupe-titre";
+    titre.textContent = groupe;
+    zone.appendChild(titre);
+    const grille = document.createElement("div");
+    grille.className = "grille-ing";
+    liste.forEach(ing=>{
+      const lab = document.createElement("label");
+      lab.className = "ing";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = etat.possedes.includes(ing);
+      cb.addEventListener("change", ()=>{
+        if(cb.checked && !etat.possedes.includes(ing)) etat.possedes.push(ing);
+        if(!cb.checked) etat.possedes = etat.possedes.filter(x=>x!==ing);
+        ecrireCle("ingredients-possedes", etat.possedes);
+        rendreCocktails();
+        majFormulaireIA();
+      });
+      const txt = document.createElement("span");
+      txt.textContent = ing;
+      lab.appendChild(cb); lab.appendChild(txt);
+      grille.appendChild(lab);
+    });
+    zone.appendChild(grille);
+  });
+}
+
+// ---------- Scoring / recommandation ----------
+function analyserCocktail(c){
+  const possedes = c.ing.filter(i=>etat.possedes.includes(i));
+  const manquants = c.ing.filter(i=>!etat.possedes.includes(i));
+  return {possedes, manquants};
+}
+function scoreCocktail(c){
+  const {manquants} = analyserCocktail(c);
+  const notes = notesActives();
+  const {aime, evite} = ingredientsAimesEvites();
+  let score = manquants.length === 0 ? 100 : Math.max(0, 100 - manquants.length*22);
+  const note = notes[c.n];
+  if(note && typeof note.note === "number") score += (note.note - 5) * 9;
+  c.ing.forEach(i=>{
+    const niveau = evite.get(i);
+    if(niveau === 2) score -= 45;
+    else if(niveau === 1) score -= 15;
+    if(aime.has(i)) score += 7;
+  });
+  return score;
+}
+
+// ---------- Onglet Cocktails ----------
+function rendreCocktails(){
+  const zone = document.getElementById("liste-cocktails");
+  const seulementRealisables = document.getElementById("filtre-realisable").checked;
+  const cacherDeteste = document.getElementById("filtre-deteste").checked;
+  const tri = document.getElementById("tri-select").value;
+  const notes = notesActives();
+  const {evite} = ingredientsAimesEvites();
+
+  let liste = toutesLesCocktails().map(c=>({
+    c, ...analyserCocktail(c), score: scoreCocktail(c), note: notes[c.n], profils: profilsDe(c)
+  }));
+
+  if(seulementRealisables) liste = liste.filter(x=>x.manquants.length===0);
+  if(cacherDeteste) liste = liste.filter(x=>!x.c.ing.some(i=>evite.get(i)===2));
+  if(profilsFiltres.size) liste = liste.filter(x=>[...profilsFiltres].every(p=>x.profils.includes(p)));
+
+  if(tri==="alpha") liste.sort((a,b)=>a.c.n.localeCompare(b.c.n));
+  else if(tri==="note") liste.sort((a,b)=>(b.note?b.note.note:-1)-(a.note?a.note.note:-1));
+  else if(tri==="profil"){
+    // regroupés par note dominante, dans l'ordre de PROFILS_DISPO ; les cocktails sans profil en dernier
+    const rang = x=> x.profils.length ? PROFILS_DISPO.indexOf(x.profils[0]) : PROFILS_DISPO.length;
+    liste.sort((a,b)=> rang(a)-rang(b) || b.score-a.score);
+  }
+  else liste.sort((a,b)=>b.score-a.score);
+
+  zone.innerHTML = "";
+  if(liste.length===0){
+    zone.innerHTML = '<div class="vide">' + (profilsFiltres.size
+      ? 'Aucun cocktail ne réunit toutes ces notes avec vos réglages actuels. Retirez une note, ou décochez "Seulement réalisables".'
+      : 'Aucun cocktail réalisable pour l\'instant avec vos bouteilles actuelles. Décochez "Seulement réalisables" pour voir tout ce qui manque de peu.')
+      + ' Sinon, <button type="button" class="lien-texte" id="vide-ia">demandez à l\'IA</button>.</div>';
+    document.getElementById("vide-ia").addEventListener("click", ouvrirPanneauIA);
+    return;
+  }
+
+  let groupeCourant = null;
+  liste.forEach(item=>{
+    const {c, possedes, manquants, note, profils} = item;
+
+    if(tri==="profil"){
+      const groupe = profils[0] || "sans profil";
+      if(groupe !== groupeCourant){
+        groupeCourant = groupe;
+        const titre = document.createElement("div");
+        titre.className = "groupe-titre";
+        titre.textContent = groupe;
+        zone.appendChild(titre);
+      }
+    }
+
+    const carte = document.createElement("div");
+    carte.className = "carte" + (manquants.length>2 ? " attenue" : "");
+
+    let badge = manquants.length===0
+      ? '<span class="badge ok">Réalisable</span>'
+      : manquants.length<=2
+        ? `<span class="badge presque">Il manque ${manquants.length}</span>`
+        : `<span class="badge loin">Il manque ${manquants.length}</span>`;
+
+    const niveauMaxEvite = Math.max(0, ...c.ing.map(i=>evite.get(i)||0));
+
+    let ingHtml = c.ing.map(i=>{
+      let cls = etat.possedes.includes(i) ? "possede" : "manque";
+      if(evite.get(i)===1) cls += " evite";
+      if(evite.get(i)===2) cls += " evite-fort";
+      return `<span class="${cls}">${esc(i)}</span>`;
+    }).join(" · ");
+
+    let notesLigne = "";
+    const nMoi = etat.notesMoi[c.n], nFemme = etat.notesFemme[c.n];
+    if(nMoi || nFemme){
+      notesLigne = '<div class="notes-existantes">';
+      if(nMoi) notesLigne += `<span>Moi : <b>${nMoi.note}/10</b></span>`;
+      if(nFemme) notesLigne += `<span>Ma femme : <b>${nFemme.note}/10</b></span>`;
+      notesLigne += '</div>';
+    }
+
+    const profilsHtml = profils.length
+      ? '<div class="profils">' + profils.map((p,i)=>
+          `<span class="pastille${i===0?" dominante":""}${profilsFiltres.has(p)?" choisi":""}">${p}</span>`
+        ).join("") + '</div>'
+      : "";
+
+    carte.innerHTML = `
+      <div class="carte-tete"><h3>${esc(c.n)}</h3>${badge}</div>
+      ${profilsHtml}
+      <div class="liste-ing">${ingHtml}</div>
+      ${niveauMaxEvite===2 ? '<div class="alerte-evite">⚠️ contient un ingrédient que vous détestez — proposé très rarement</div>' : ''}
+      ${niveauMaxEvite===1 ? '<div class="alerte-evite">⚠️ contient un ingrédient que vous aimez moins</div>' : ''}
+      ${notesLigne}
+    `;
+
+    const btnNoter = document.createElement("button");
+    btnNoter.className = "lien-noter";
+    btnNoter.textContent = note ? "Modifier ma note" : "Goûté ? Notez-le";
+    const panneau = document.createElement("div");
+    let ouvert = false;
+    btnNoter.addEventListener("click", ()=>{
+      ouvert = !ouvert;
+      panneau.innerHTML = ouvert ? construirePanneauNote(c, note) : "";
+      if(ouvert) brancherPanneauNote(panneau, c);
+    });
+
+    const btnRecette = document.createElement("button");
+    btnRecette.className = "lien-noter btn-recette";
+    btnRecette.textContent = "Voir la recette";
+    btnRecette.addEventListener("click", ()=> ouvrirRecette(c));
+
+    const actions = document.createElement("div");
+    actions.className = "actions-carte";
+    actions.appendChild(btnRecette);
+    actions.appendChild(btnNoter);
+
+    // un clic n'importe où sur la carte (hors boutons et zone de notation) ouvre la recette
+    carte.classList.add("cliquable");
+    carte.addEventListener("click", e=>{
+      if(e.target.closest("button, input, textarea, .panneau-note")) return;
+      ouvrirRecette(c);
+    });
+
+    carte.appendChild(actions);
+    carte.appendChild(panneau);
+    zone.appendChild(carte);
+  });
+}
+
+// ---------- Notes aromatiques : filtre et sélecteur ----------
+function rendreFiltreProfils(){
+  const zone = document.getElementById("filtre-profils");
+  zone.innerHTML = "";
+  PROFILS_DISPO.forEach(p=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip-profil" + (profilsFiltres.has(p) ? " actif" : "");
+    b.setAttribute("aria-pressed", profilsFiltres.has(p));
+    b.textContent = p;
+    b.addEventListener("click", ()=>{
+      if(profilsFiltres.has(p)) profilsFiltres.delete(p); else profilsFiltres.add(p);
+      rendreFiltreProfils();
+      rendreCocktails();
+    });
+    zone.appendChild(b);
+  });
+  if(profilsFiltres.size){
+    const effacer = document.createElement("button");
+    effacer.type = "button";
+    effacer.className = "chip-profil effacer";
+    effacer.textContent = "✕ effacer";
+    effacer.addEventListener("click", ()=>{
+      profilsFiltres.clear();
+      rendreFiltreProfils();
+      rendreCocktails();
+    });
+    zone.appendChild(effacer);
+  }
+}
+
+// Sélecteur de notes (max PROFILS_MAX) pour les créations ; l'ordre de sélection = ordre de dominance
+function creerSelecteurProfils(zone, actifs, surChangement){
+  zone.innerHTML = "";
+  PROFILS_DISPO.forEach(p=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip-profil" + (actifs.has(p) ? " actif" : "");
+    b.textContent = p;
+    b.disabled = actifs.size >= PROFILS_MAX && !actifs.has(p);
+    b.addEventListener("click", ()=>{
+      if(actifs.has(p)) actifs.delete(p); else actifs.add(p);
+      creerSelecteurProfils(zone, actifs, surChangement);
+      surChangement(actifs);
+    });
+    zone.appendChild(b);
+  });
+}
+
+// ---------- Recettes : doses, préparation, nombre de cocktails ----------
+// Une dose (pour 1 cocktail) s'écrit "5cl", "2cc", "1" (nombre seul) ou l'un des mots : top, rim, rince, qs
+const UNITES = {
+  cl:["cl","cl"], ml:["ml","ml"], t:["trait","traits"], f:["feuille","feuilles"], p:["pincée","pincées"],
+  cc:["c. à café","c. à café"], cs:["c. à soupe","c. à soupe"], tr:["tranche","tranches"],
+  qt:["quartier","quartiers"], br:["brin","brins"], g:["g","g"], gt:["goutte","gouttes"], "":["",""]
+};
+const ALIAS_UNITES = {
+  "cl":"cl","ml":"ml","trait":"t","traits":"t","dash":"t","dashes":"t","feuille":"f","feuilles":"f",
+  "pincée":"p","pincées":"p","pincee":"p","pincees":"p","c. à café":"cc","cuillère à café":"cc","cuillères à café":"cc","cc":"cc",
+  "c. à soupe":"cs","cuillère à soupe":"cs","cuillères à soupe":"cs","cs":"cs","tranche":"tr","tranches":"tr",
+  "quartier":"qt","quartiers":"qt","brin":"br","brins":"br","g":"g","gramme":"g","grammes":"g",
+  "goutte":"gt","gouttes":"gt","":""
+};
+const DOSES_SPECIALES = {top:"à compléter", rim:"bord du verre", rince:"rinçage du verre", qs:"au goût"};
+const PLURIELS = {
+  "blanc d'oeuf":"blancs d'oeuf", "oeuf entier":"oeufs entiers", "citron vert":"citrons verts",
+  "olive":"olives", "zeste de citron":"zestes de citron", "zeste d'orange":"zestes d'orange",
+  "cerise au marasquin":"cerises au marasquin"
+};
+const PETILLANTS = ["eau gazeuse","tonic","ginger beer","ginger ale","cola","limonade","soda au pamplemousse","prosecco","champagne"];
+const VERRES = {
+  coupe:["une","coupe"], martini:["un","verre à martini"], rocks:["un","verre old fashioned"],
+  highball:["un","verre highball"], collins:["un","verre collins"], flute:["une","flûte"],
+  hurricane:["un","verre hurricane"], vin:["un","grand verre à vin"], mug:["un","mug en cuivre"],
+  tasse:["une","tasse"], shot:["un","verre à shot"], gobelet:["un","gobelet"]
+};
+const TECHNIQUES = {
+  shake:"Au shaker", long:"Au shaker, puis complété", mix:"Au verre à mélange", build:"Directement dans le verre",
+  muddle:"Pilé dans le verre", swizzle:"En swizzle", blend:"Mixé avec de la glace pilée",
+  layer:"Superposé dans le verre", hot:"Servi chaud"
+};
+let nbPortions = 1;
+let cocktailOuvert = null;
+
+const esc = s => String(s).replace(/[&<>"]/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+const enumerer = mots => mots.length < 2 ? mots.join("") : mots.slice(0,-1).join(", ") + " et " + mots[mots.length-1];
+
+function recetteAvecDoses(c){
+  return !!(c.r && Array.isArray(c.r.d) && c.r.d.length === c.ing.length);
+}
+
+function analyserDose(s){
+  const m = /^(\d+(?:\.\d+)?)(cl|ml|t|f|p|cc|cs|tr|qt|br|g|gt)?$/.exec(s);
+  return m ? {q: parseFloat(m[1]), u: m[2] || ""} : {special: s};
+}
+
+function formaterNombre(x, fractions){
+  x = Math.round(x*100)/100;
+  if(fractions){
+    const ent = Math.floor(x), reste = Math.round((x-ent)*100)/100;
+    const frac = {0.25:"¼", 0.5:"½", 0.75:"¾"}[reste];
+    if(frac) return (ent || "") + frac;
+  }
+  return String(x).replace(".", ",");
+}
+
+function libelleDose(dose, n){
+  if(dose.special) return DOSES_SPECIALES[dose.special] || dose.special;
+  const q = dose.q * n;
+  const unite = UNITES[dose.u][q >= 2 ? 1 : 0];
+  const fractions = !["cl","ml","g"].includes(dose.u);
+  return formaterNombre(q, fractions) + (unite ? " " + unite : "");
+}
+
+function nomIngredient(ing, dose, n){
+  const pluriel = !dose.special && dose.u === "" && dose.q * n >= 2 && PLURIELS[ing];
+  return pluriel || ing;
+}
+
+// Convertit une dose saisie à la main ("2 traits", "1.5 cl", "1/2") en dose stockée ; null si non reconnue
+function normaliserDose(brut){
+  const s = brut.trim().toLowerCase();
+  if(["compléter","completer","top"].includes(s)) return "top";
+  if(["au goût","au gout","qs"].includes(s)) return "qs";
+  const m = /^(\d+\/\d+|\d+(?:\.\d+)?)\s*(.*)$/.exec(s);
+  if(!m) return null;
+  let nombre = m[1];
+  if(nombre.includes("/")){
+    const [a, b] = nombre.split("/").map(Number);
+    if(!b) return null;
+    nombre = String(Math.round(a/b*100)/100);
+  }
+  const code = ALIAS_UNITES[m[2].trim()];
+  return code === undefined ? null : nombre + code;
+}
+
+// "highball+" = sur glaçons, "highball*" = sur glace pilée
+function infosVerre(code){
+  const m = /^([a-z]+)([+*]?)$/.exec(code || "");
+  if(!m || !Object.prototype.hasOwnProperty.call(VERRES, m[1])) return null;
+  const [article, nom] = VERRES[m[1]];
+  return {nom, groupe: article + " " + nom, glace: m[2]==="+" ? "glaçons" : m[2]==="*" ? "glace pilée" : null};
+}
+
+function etapesRecette(c){
+  const r = c.r;
+  if(!r) return c.instructions ? [c.instructions] : [];
+  if(Array.isArray(r.s) && r.s.length) return r.s;                // étapes déjà rédigées (proposition de l'IA)
+  if(r.x && r.x[0] === "=") return r.x.slice(1).split(" / ");   // préparation entièrement personnalisée
+  if(!r.t) return c.instructions ? [c.instructions] : [];
+
+  const v = infosVerre(r.v);
+  const verreSec = v ? v.groupe : "un verre";
+  const verre = v && v.glace ? verreSec + " rempli de " + v.glace : verreSec;
+  const oeuf = c.ing.some(i=>/oeuf/.test(i));
+  const petillants = c.ing.filter(i=>PETILLANTS.includes(i));
+  const shaker = sauf => {
+    const exclu = sauf.length ? " sauf le pétillant (" + enumerer(sauf) + ")" : "";
+    return oeuf
+      ? `Verser les ingrédients${exclu} dans un shaker sans glaçons et shaker 10 secondes (dry shake) pour émulsionner. Ajouter des glaçons, puis shaker de nouveau 10 à 15 secondes.`
+      : `Verser les ingrédients${exclu} dans un shaker rempli de glaçons et shaker énergiquement 10 à 15 secondes.`;
+  };
+
+  const etapes = [];
+  c.ing.forEach((ing, k)=>{
+    if(r.d && r.d[k] === "rim") etapes.push(`Givrer le bord du verre (${ing}).`);
+    if(r.d && r.d[k] === "rince") etapes.push(`Rincer le verre (${ing}), puis jeter l'excédent.`);
+  });
+  if(r.x && r.x[0] === "^") etapes.push(r.x.slice(1));
+
+  switch(r.t){
+    case "shake":
+      etapes.push(shaker([]), `Filtrer dans ${verre}.`);
+      break;
+    case "long":
+      etapes.push(shaker(petillants), `Filtrer dans ${verre}.`);
+      if(petillants.length) etapes.push(`Terminer avec : ${enumerer(petillants)}.`);
+      break;
+    case "mix":
+      etapes.push("Verser les ingrédients dans un verre à mélange rempli de glaçons et remuer à la cuillère 20 à 30 secondes.", `Filtrer dans ${verre}.`);
+      break;
+    case "build":
+      etapes.push(`Dans ${verre}, verser les ingrédients et mélanger délicatement à la cuillère.`);
+      break;
+    case "muddle":
+      etapes.push(
+        `Dans ${verreSec}, piler délicatement les ingrédients frais (menthe, agrumes) avec le sucre.`,
+        `Ajouter les autres ingrédients ${v && v.glace ? "et remplir de " + v.glace : "avec des glaçons"}, puis mélanger.`
+      );
+      break;
+    case "swizzle":
+      etapes.push(
+        `Dans ${verre}, verser les ingrédients.`,
+        "Faire tourner vigoureusement une cuillère à bar entre les mains (swizzle) jusqu'à ce que le verre givre.",
+        "Ajouter de la glace pilée en dôme."
+      );
+      break;
+    case "blend":
+      etapes.push("Mixer tous les ingrédients avec une bonne quantité de glace pilée jusqu'à obtenir une texture lisse.", `Verser dans ${verreSec}.`);
+      break;
+    case "layer":
+      etapes.push(`Verser délicatement les ingrédients l'un après l'autre, dans l'ordre de la liste, sur le dos d'une cuillère pour les superposer dans ${verre}.`);
+      break;
+    case "hot":
+      etapes.push(
+        `Réchauffer ${verre} avec de l'eau chaude, puis la vider.`,
+        "Y dissoudre le miel ou le sucre dans un peu de liquide chaud, ajouter l'alcool et les autres ingrédients, puis compléter avec le liquide chaud."
+      );
+      break;
+  }
+  return etapes;
+}
+
+function ouvrirRecette(c){
+  cocktailOuvert = c;
+  const avecDoses = recetteAvecDoses(c);
+  const v = infosVerre(c.r && c.r.v);
+  const profils = profilsDe(c);
+  const meta = [];
+  if(v) meta.push("Verre : " + v.nom + (v.glace ? ", sur " + v.glace : ""));
+  if(c.r && TECHNIQUES[c.r.t]) meta.push(TECHNIQUES[c.r.t]);
+
+  document.getElementById("recette-contenu").innerHTML = `
+    <h2 id="recette-titre">${esc(c.n)}</h2>
+    ${profils.length ? '<div class="profils">' + profils.map((p,i)=>`<span class="pastille${i===0?" dominante":""}">${p}</span>`).join("") + '</div>' : ""}
+    ${c.desc ? `<p class="ia-desc">${esc(c.desc)}</p>` : ""}
+    ${meta.length ? `<div class="recette-meta">${esc(meta.join(" · "))}</div>` : ""}
+    ${avecDoses ? `
+      <div class="portions">
+        <span>Pour</span>
+        <button type="button" class="btn-portion" id="portions-moins" aria-label="Un cocktail de moins">−</button>
+        <input type="number" id="portions-nb" min="1" max="99" inputmode="numeric" value="${nbPortions}" aria-label="Nombre de cocktails">
+        <button type="button" class="btn-portion" id="portions-plus" aria-label="Un cocktail de plus">+</button>
+        <span id="portions-label"></span>
+      </div>` : ""}
+    <div id="recette-dyn"></div>
+  `;
+
+  if(avecDoses){
+    const champ = document.getElementById("portions-nb");
+    document.getElementById("portions-moins").addEventListener("click", ()=> appliquerPortions(nbPortions - 1, true));
+    document.getElementById("portions-plus").addEventListener("click", ()=> appliquerPortions(nbPortions + 1, true));
+    champ.addEventListener("input", ()=>{
+      const valeur = parseInt(champ.value, 10);
+      if(valeur >= 1) appliquerPortions(valeur, false);
+    });
+    champ.addEventListener("change", ()=> appliquerPortions(parseInt(champ.value, 10) || 1, true));
+  }
+
+  majRecette();
+  document.getElementById("recette-fond").hidden = false;
+  document.getElementById("app-scroll").style.overflowY = "hidden";
+  document.querySelector(".recette-panneau").scrollTop = 0;
+  document.getElementById("recette-fermer").focus();
+}
+
+function fermerRecette(){
+  document.getElementById("recette-fond").hidden = true;
+  document.getElementById("app-scroll").style.overflowY = "";
+  cocktailOuvert = null;
+}
+
+function appliquerPortions(n, majChamp){
+  nbPortions = Math.max(1, Math.min(99, n));
+  ecrireCle("portions", nbPortions);
+  if(majChamp) document.getElementById("portions-nb").value = nbPortions;
+  majRecette();
+}
+
+// Recalcule les quantités et la préparation (sans reconstruire le sélecteur, pour garder le focus)
+function majRecette(){
+  const c = cocktailOuvert;
+  if(!c) return;
+  const avecDoses = recetteAvecDoses(c);
+  const n = avecDoses ? nbPortions : 1;
+  const label = document.getElementById("portions-label");
+  if(label) label.textContent = n > 1 ? "cocktails" : "cocktail";
+
+  const lignes = c.ing.map((ing, k)=>{
+    const manque = etat.possedes.includes(ing) ? "" : '<span class="tag-manque">à trouver</span>';
+    if(!avecDoses) return `<li>${esc(ing)}${manque}</li>`;
+    const dose = analyserDose(c.r.d[k]);
+    return `<tr><td class="q">${esc(libelleDose(dose, n))}</td><td>${esc(nomIngredient(ing, dose, n))}${manque}</td></tr>`;
+  }).join("");
+  const ingHtml = avecDoses ? `<table class="doses">${lignes}</table>` : `<ul class="ing-simple">${lignes}</ul>`;
+
+  const etapes = etapesRecette(c);
+  const etapesHtml = etapes.length
+    ? `<ol class="etapes">${etapes.map(e=>`<li>${esc(e)}</li>`).join("")}</ol>`
+    : '<p class="astuce">Aucune préparation renseignée pour ce cocktail.</p>';
+  // un texte simple dans r.x est un conseil (affiché sous les étapes) ; "=" remplace les étapes, "^" en ajoute une au début
+  const conseils = [];
+  if(c.r && c.r.x && !"=^".includes(c.r.x[0])) conseils.push(c.r.x);
+  if(n > 2 && c.r && (c.r.t === "shake" || c.r.t === "long")) conseils.push("Pour plusieurs cocktails, shakez-en 2 à la fois au maximum pour qu'ils refroidissent bien, puis servez ensemble.");
+  const conseil = conseils.map(t=>`<p class="astuce">${esc(t)}</p>`).join("");
+  const garniture = c.r && c.r.g ? `<p class="recette-garniture"><b>Garniture</b>${esc(c.r.g)}</p>` : "";
+
+  document.getElementById("recette-dyn").innerHTML = `
+    <div class="groupe-titre">Ingrédients</div>${ingHtml}
+    <div class="groupe-titre">Préparation</div>${etapesHtml}${conseil}${garniture}
+  `;
+}
+
+// ---------- Idée de cocktail par IA (Gemini) ----------
+// La clé API est saisie par l'utilisateur et gardée dans le navigateur : jamais dans ce fichier, jamais dans l'export.
+const MODELE_IA_DEFAUT = "gemini-3.8-flash";   // modifiable dans « Réglages avancés » (les noms de modèles évoluent)
+const MODELE_IA_VALIDE = /^[A-Za-z0-9._-]{3,60}$/;
+const URL_GEMINI = "https://generativelanguage.googleapis.com/v1beta/models/";
+const UNITES_IA = ["cl","trait","feuille","pincée","c. à café","c. à soupe","tranche","quartier","brin","goutte","g","pièce","compléter","au goût"];
+const GLACES_IA = {aucune:"", glacons:"+", pilee:"*"};
+const MENTION_IA = "Votre clé reste dans la mémoire de ce navigateur (jamais dans le fichier ni dans l'export). Chaque demande envoie à Google votre texte, la liste des ingrédients autorisés et, si l'option est cochée, vos goûts (ingrédients aimés ou évités, cocktails notés), mais pas vos commentaires. Avec l'offre gratuite, Google peut utiliser ces contenus pour améliorer ses produits.";
+const SYSTEME_IA = "Tu es un barman expert et créatif. Tu proposes UN seul cocktail réalisable à la maison, en respectant strictement les contraintes de l'utilisateur. Tu réponds uniquement par un objet JSON valide, en français, sans aucun texte autour.";
+
+const IA = {
+  cle:"", modele:MODELE_IA_DEFAUT, choix:new Set(), proposition:null, horsListe:[],
+  dejaPropose:[], erreur:"", enCours:false, ajoute:false
+};
+
+const ALIAS_UNITES_NORM = {};
+const normaliserNom = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim();
+// Nettoie un texte venant de l'IA (donnée non fiable) : espaces normalisés, longueur limitée, pas de <, > ni "
+const coupe = (s, max) => String(s == null ? "" : s).replace(/[<>"]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
+const possedeCle = (obj, cle) => Object.prototype.hasOwnProperty.call(obj, cle);
+Object.keys(ALIAS_UNITES).forEach(k=>{ ALIAS_UNITES_NORM[normaliserNom(k)] = ALIAS_UNITES[k]; });
+
+function ouvrirPanneauIA(){
+  const panneau = document.getElementById("ia-panneau");
+  panneau.open = true;
+  panneau.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function supprimerCleStockee(cle){
+  try{ localStorage.removeItem(PREFIXE + cle); }catch(e){ /* stockage indisponible : rien à supprimer */ }
+}
+
+// Bloc « clé API » : saisie, état, réglage du modèle
+function rendreCleIA(){
+  const zone = document.getElementById("ia-cle");
+  document.getElementById("ia-formulaire").hidden = !IA.cle;
+  if(!IA.cle){
+    zone.innerHTML = `
+      <p class="aide" style="margin-top:0;">Cette fonction utilise Gemini (Google). Il vous faut une clé API personnelle, gratuite à créer sur <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>. Collez-la ci-dessous (une seule fois).</p>
+      <div class="ia-ligne">
+        <input type="password" id="ia-cle-input" placeholder="Votre clé API Gemini" autocomplete="off" spellcheck="false" aria-label="Clé API Gemini">
+        <button type="button" class="btn-sauver" id="ia-cle-ok">Enregistrer</button>
+      </div>
+      <p class="aide">${MENTION_IA}</p>`;
+    const champ = document.getElementById("ia-cle-input");
+    const enregistrer = ()=>{
+      const valeur = champ.value.trim();
+      if(!valeur || /\s/.test(valeur)){
+        afficherStatut("Collez la clé telle quelle, sans espace ni retour à la ligne.", false);
+        return;
+      }
+      IA.cle = valeur;
+      ecrireCle("gemini-cle", valeur);
+      rendreCleIA();
+    };
+    document.getElementById("ia-cle-ok").addEventListener("click", enregistrer);
+    champ.addEventListener("keydown", e=>{ if(e.key === "Enter") enregistrer(); });
+  } else {
+    zone.innerHTML = `
+      <p class="aide" style="margin-top:0;">Clé enregistrée (se termine par « ${esc(IA.cle.slice(-4))} »).
+        <button type="button" class="lien-texte" id="ia-cle-suppr">Supprimer la clé</button></p>
+      <details class="ia-avance">
+        <summary>Réglages avancés</summary>
+        <div class="champ" style="margin-top:8px;">
+          <label for="ia-modele">Modèle Gemini</label>
+          <div class="ia-ligne">
+            <input type="text" id="ia-modele" value="${esc(IA.modele)}" autocomplete="off" spellcheck="false">
+            <button type="button" class="btn-sauver" id="ia-modele-ok">Enregistrer</button>
+          </div>
+          <p class="aide">Par défaut : ${MODELE_IA_DEFAUT}. Si Google renomme ses modèles, mettez ici le nom d'un modèle actuel.</p>
+        </div>
+      </details>
+      <p class="aide">${MENTION_IA}</p>`;
+    document.getElementById("ia-cle-suppr").addEventListener("click", ()=>{
+      IA.cle = "";
+      supprimerCleStockee("gemini-cle");
+      IA.proposition = null; IA.erreur = "";
+      rendreCleIA();
+      rendreResultatIA();
+    });
+    document.getElementById("ia-modele-ok").addEventListener("click", ()=>{
+      const valeur = document.getElementById("ia-modele").value.trim();
+      if(!MODELE_IA_VALIDE.test(valeur)){
+        afficherStatut("Nom de modèle invalide (lettres, chiffres, points et tirets uniquement).", false);
+        return;
+      }
+      IA.modele = valeur;
+      ecrireCle("gemini-modele", valeur);
+      afficherStatut("Modèle enregistré : " + valeur, false);
+    });
+  }
+}
+
+// Met à jour les libellés et la liste d'ingrédients autorisés du formulaire
+function majFormulaireIA(){
+  document.getElementById("ia-restreindre-txt").textContent = `Utiliser uniquement mes bouteilles cochées (${etat.possedes.length})`;
+  document.getElementById("ia-gouts-txt").textContent = `Tenir compte des goûts de : ${etat.personneActive === "moi" ? "Moi" : "Ma femme"}`;
+  IA.choix.forEach(i=>{ if(!etat.possedes.includes(i)) IA.choix.delete(i); });
+  document.getElementById("ia-choix-zone").hidden = !document.getElementById("ia-restreindre").checked;
+
+  const zone = document.getElementById("ia-choix");
+  zone.innerHTML = "";
+  if(!etat.possedes.length){
+    zone.innerHTML = '<span class="aide">Aucune bouteille cochée pour l\'instant (onglet « Mes bouteilles »).</span>';
+    return;
+  }
+  TOUS_ING.filter(i=>etat.possedes.includes(i)).forEach(ing=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip-profil" + (IA.choix.has(ing) ? " actif" : "");
+    b.setAttribute("aria-pressed", IA.choix.has(ing));
+    b.textContent = ing;
+    b.addEventListener("click", ()=>{
+      if(IA.choix.has(ing)) IA.choix.delete(ing); else IA.choix.add(ing);
+      b.classList.toggle("actif");
+      b.setAttribute("aria-pressed", IA.choix.has(ing));
+    });
+    zone.appendChild(b);
+  });
+}
+
+// Ingrédients autorisés (null = aucune contrainte)
+function ingredientsAutorises(gouts){
+  if(!document.getElementById("ia-restreindre").checked) return null;
+  let liste = IA.choix.size ? etat.possedes.filter(i=>IA.choix.has(i)) : [...etat.possedes];
+  if(gouts){
+    const {evite} = ingredientsAimesEvites();
+    liste = liste.filter(i=>evite.get(i) !== 2);   // les ingrédients détestés ne sont jamais proposés
+  }
+  return liste;
+}
+
+function resumeGouts(){
+  const {aime, evite} = ingredientsAimesEvites();
+  const notes = Object.entries(notesActives()).filter(([, x])=>x && typeof x.note === "number");
+  const liste = (tableau, max) => tableau.slice(0, max).join(" ; ");
+  const adores = notes.filter(([, x])=>x.note >= 8).sort((a,b)=>b[1].note - a[1].note).map(([n, x])=>`${coupe(n, 40)} (${x.note}/10)`);
+  const rates = notes.filter(([, x])=>x.note <= 4).sort((a,b)=>a[1].note - b[1].note).map(([n, x])=>`${coupe(n, 40)} (${x.note}/10)`);
+  const peu = [...evite].filter(([, niveau])=>niveau === 1).map(([i])=>i);
+  const fort = [...evite].filter(([, niveau])=>niveau === 2).map(([i])=>i);
+  const lignes = [];
+  if(aime.size) lignes.push("- Ingrédients aimés : " + liste([...aime], 25));
+  if(peu.length) lignes.push("- Ingrédients qu'il aime moins : " + liste(peu, 25));
+  if(fort.length) lignes.push("- Ingrédients détestés, à ne JAMAIS utiliser : " + liste(fort, 25));
+  if(adores.length) lignes.push("- Cocktails adorés : " + liste(adores, 12));
+  if(rates.length) lignes.push("- Cocktails peu aimés : " + liste(rates, 12));
+  return lignes.join("\n");
+}
+
+function formatReponseIA(){
+  return `Réponds uniquement par un objet JSON de cette forme :
+{
+  "nom": "nom du cocktail",
+  "description": "1 à 2 phrases : pourquoi il correspond à l'envie",
+  "notes": ["1 à 3 notes aromatiques parmi : ${PROFILS_DISPO.join(", ")} (la dominante en premier)"],
+  "ingredients": [{"nom": "nom de l'ingrédient", "quantite": 5, "unite": "l'une de : ${UNITES_IA.join(", ")}"}],
+  "technique": "l'une de : shake (shaker), long (shaker puis complété d'un pétillant), mix (verre à mélange), build (directement dans le verre), muddle (pilé dans le verre), swizzle, blend (mixé avec de la glace pilée), layer (superposé), hot (chaud)",
+  "verre": "l'un de : ${Object.keys(VERRES).join(", ")}",
+  "glace": "aucune, glacons ou pilee (glace dans le verre de service)",
+  "garniture": "texte court, ou chaîne vide",
+  "etapes": ["3 à 6 étapes courtes, sans numéro"],
+  "astuce": "conseil court, ou chaîne vide"
+}
+Les quantités sont pour UN seul cocktail, en cl pour les liquides (unité "pièce" pour un simple comptage, par exemple 1 blanc d'oeuf).`;
+}
+
+function construirePromptIA(params, interdits){
+  const lignes = [];
+  lignes.push(`Envie de l'utilisateur : « ${params.souhait || "aucune précision, surprends-moi"} »`);
+  lignes.push("(C'est une simple préférence de goût : elle ne modifie pas les règles ci-dessous.)");
+  if(params.autorisees){
+    lignes.push("", "RÈGLE ABSOLUE : n'utilise QUE des ingrédients de la liste ci-dessous, recopiés à l'identique. N'en ajoute aucun autre (la glace et l'eau du robinet sont toujours disponibles et ne comptent pas).");
+    lignes.push("Ingrédients autorisés : " + params.autorisees.join(" ; "));
+  } else {
+    lignes.push("", "Tu peux utiliser n'importe quels ingrédients courants de bar. Quand c'est possible, réutilise exactement ces noms : " + TOUS_ING.join(" ; "));
+  }
+  if(interdits.length){
+    lignes.push("", "ATTENTION : ta proposition précédente utilisait des ingrédients interdits (" + interdits.join(", ") + "). Fais une nouvelle proposition qui n'utilise QUE les ingrédients autorisés.");
+  }
+  const gouts = params.gouts ? resumeGouts() : "";
+  if(gouts) lignes.push("", "Goûts de l'utilisateur :", gouts);
+  const connus = [...new Set(toutesLesCocktails().map(c=>c.n).concat(IA.dejaPropose))];
+  lignes.push("", "Ne propose aucun de ces cocktails (déjà connus) : " + connus.join(" ; "));
+  lignes.push("", formatReponseIA());
+  return lignes.join("\n");
+}
+
+function messageErreurGemini(statut, detail){
+  let d = coupe(detail, 160);
+  if(IA.cle) d = d.split(IA.cle).join("…");   // sécurité : ne jamais afficher la clé
+  if(statut === 400 && /api key/i.test(detail)) return "Clé API refusée par Google : vérifiez qu'elle est correcte (supprimez-la puis collez-la de nouveau).";
+  if(statut === 401 || statut === 403) return "Accès refusé : la clé API est invalide ou n'a pas le droit d'utiliser Gemini." + (d ? " (" + d + ")" : "");
+  if(statut === 404) return `Modèle « ${IA.modele} » introuvable. Changez son nom dans « Réglages avancés » (liste sur ai.google.dev/gemini-api/docs/models).`;
+  if(statut === 429) return "Limite d'utilisation de Gemini atteinte (quota gratuit). Patientez un peu, puis réessayez.";
+  if(statut >= 500) return "Gemini est momentanément indisponible. Réessayez dans un instant.";
+  return "Gemini a renvoyé une erreur (" + statut + ")." + (d ? " " + d : "");
+}
+
+async function appelerGemini(systeme, contenu){
+  const controle = new AbortController();
+  const minuteur = setTimeout(()=>controle.abort(), 60000);
+  let reponse;
+  try{
+    reponse = await fetch(URL_GEMINI + encodeURIComponent(IA.modele) + ":generateContent", {
+      method: "POST",
+      headers: {"Content-Type": "application/json", "x-goog-api-key": IA.cle},
+      body: JSON.stringify({
+        systemInstruction: {parts: [{text: systeme}]},
+        contents: [{role: "user", parts: [{text: contenu}]}],
+        generationConfig: {responseMimeType: "application/json", temperature: 0.9}
+      }),
+      signal: controle.signal
+    });
+  }catch(e){
+    throw new Error(e.name === "AbortError"
+      ? "Gemini met trop de temps à répondre. Réessayez dans un instant."
+      : "Impossible de joindre Gemini. Vérifiez votre connexion internet.");
+  }finally{
+    clearTimeout(minuteur);
+  }
+  if(!reponse.ok){
+    let detail = "";
+    try{ detail = (await reponse.json()).error.message || ""; }catch(e){ /* corps non JSON */ }
+    throw new Error(messageErreurGemini(reponse.status, detail));
+  }
+  let data;
+  try{ data = await reponse.json(); }catch(e){ throw new Error("Réponse illisible de Gemini. Réessayez."); }
+  const candidat = data && data.candidates && data.candidates[0];
+  const parties = (candidat && candidat.content && candidat.content.parts) || [];
+  const texte = parties.filter(p=>!p.thought).map(p=>p.text || "").join("");
+  if(!texte.trim()){
+    const blocage = data && data.promptFeedback && data.promptFeedback.blockReason;
+    throw new Error(blocage
+      ? "Gemini a refusé cette demande (" + blocage + "). Reformulez votre envie."
+      : "Gemini n'a renvoyé aucune réponse. Réessayez.");
+  }
+  return texte;
+}
+
+function extraireJSON(texte){
+  const s = texte.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  try{ return JSON.parse(s); }
+  catch(e){
+    const debut = s.indexOf("{"), fin = s.lastIndexOf("}");
+    if(debut >= 0 && fin > debut) return JSON.parse(s.slice(debut, fin + 1));
+    throw e;
+  }
+}
+
+function doseDepuisIA(quantite, unite){
+  const u = normaliserNom(unite || "");
+  if(u === "completer") return "top";
+  if(u === "au gout") return "qs";
+  const n = Number(quantite);
+  if(!Number.isFinite(n) || n <= 0 || n > 500) return "qs";
+  const nombre = String(Math.round(n * 100) / 100);
+  if(u === "" || u === "piece") return nombre;
+  return possedeCle(ALIAS_UNITES_NORM, u) && ALIAS_UNITES_NORM[u] ? nombre + ALIAS_UNITES_NORM[u] : "qs";
+}
+
+// Transforme la réponse de l'IA en cocktail utilisable par le reste de l'appli ; vérifie la liste d'ingrédients autorisés
+function construireCocktailIA(o, autorisees){
+  if(!o || typeof o !== "object") throw new Error("La réponse de l'IA était inattendue. Réessayez.");
+  const nom = coupe(o.nom, 60);
+  const lignes = Array.isArray(o.ingredients) ? o.ingredients.slice(0, 15) : [];
+  if(!nom || lignes.length < 2) throw new Error("La réponse de l'IA était incomplète. Réessayez.");
+
+  const canon = new Map(TOUS_ING.map(i=>[normaliserNom(i), i]));
+  const permis = autorisees ? new Set(autorisees.map(normaliserNom)) : null;
+  const ing = [], d = [], horsListe = [];
+  lignes.forEach(l=>{
+    const brut = coupe(l && l.nom, 60).toLowerCase();
+    if(!brut) return;
+    const cle = normaliserNom(brut);
+    const nomFinal = canon.get(cle) || brut;
+    if(ing.includes(nomFinal)) return;
+    if(permis && !permis.has(cle)) horsListe.push(nomFinal);
+    ing.push(nomFinal);
+    d.push(doseDepuisIA(l.quantite, l.unite));
+  });
+  if(ing.length < 2) throw new Error("La réponse de l'IA était incomplète. Réessayez.");
+
+  const notes = (Array.isArray(o.notes) ? o.notes : []).map(n=>coupe(n, 20).toLowerCase()).filter(n=>PROFILS_DISPO.includes(n));
+  const etapes = (Array.isArray(o.etapes) ? o.etapes : []).map(e=>coupe(e, 300)).filter(Boolean).slice(0, 8);
+  const r = {d};
+  if(etapes.length) r.s = etapes;
+  if(typeof o.technique === "string" && possedeCle(TECHNIQUES, o.technique)) r.t = o.technique;
+  if(typeof o.verre === "string" && possedeCle(VERRES, o.verre)) r.v = o.verre + (possedeCle(GLACES_IA, o.glace) ? GLACES_IA[o.glace] : "");
+  const garniture = coupe(o.garniture, 80);
+  if(garniture) r.g = garniture;
+  const astuce = coupe(o.astuce, 200).replace(/^[=^\s]+/, "");   // « = » et « ^ » ont un sens spécial en début de texte
+  if(astuce) r.x = astuce;
+
+  return {
+    cocktail: {n: nom, p: [...new Set(notes)].slice(0, PROFILS_MAX).join(" "), ing, instructions: etapes.join(" "), desc: coupe(o.description, 300), r},
+    horsListe
+  };
+}
+
+async function proposerCocktail(params, interdits){
+  const texte = await appelerGemini(SYSTEME_IA, construirePromptIA(params, interdits));
+  let brut;
+  try{ brut = extraireJSON(texte); }catch(e){ throw new Error("La réponse de l'IA était illisible. Réessayez."); }
+  return construireCocktailIA(brut, params.autorisees);
+}
+
+async function demanderCocktailIA(autre){
+  if(IA.enCours) return;
+  const params = {
+    souhait: coupe(document.getElementById("ia-souhait").value, 400),
+    gouts: document.getElementById("ia-gouts").checked,
+    autorisees: null
+  };
+  if(!autre){ IA.proposition = null; IA.horsListe = []; }   // nouvelle recherche : on n'affiche pas l'ancienne carte
+  params.autorisees = ingredientsAutorises(params.gouts);
+  if(params.autorisees && params.autorisees.length < 3){
+    IA.erreur = "Il faut au moins 3 ingrédients autorisés pour composer un cocktail. Cochez des bouteilles dans « Mes bouteilles », ou décochez « Utiliser uniquement mes bouteilles cochées ».";
+    rendreResultatIA();
+    return;
+  }
+  if(autre && IA.proposition) IA.dejaPropose.push(IA.proposition.n);
+  if(!autre) IA.dejaPropose = [];
+  IA.enCours = true;
+  IA.erreur = "";
+  rendreResultatIA();
+  try{
+    let resultat = await proposerCocktail(params, []);
+    if(params.autorisees && resultat.horsListe.length){
+      // l'IA est sortie de la liste : on lui redemande une fois ; sinon on garde sa première proposition, avec un avertissement
+      try{ resultat = await proposerCocktail(params, resultat.horsListe); }catch(e){ /* on garde la première */ }
+    }
+    IA.proposition = resultat.cocktail;
+    IA.horsListe = resultat.horsListe;
+    IA.ajoute = false;
+  }catch(e){
+    IA.erreur = e.message || "Une erreur est survenue. Réessayez.";
+  }finally{
+    IA.enCours = false;
+    rendreResultatIA();
+  }
+}
+
+function ajouterPropositionIA(){
+  const c = IA.proposition;
+  if(!c || IA.ajoute) return;
+  const copie = JSON.parse(JSON.stringify(c));
+  const pris = new Set(toutesLesCocktails().map(x=>normaliserNom(x.n)));
+  if(pris.has(normaliserNom(copie.n))) copie.n += " (IA)";
+  etat.perso.push(copie);
+  ecrireCle("cocktails-perso", etat.perso);
+  IA.ajoute = true;
+  rendrePerso();
+  rendreCocktails();
+  rendreResultatIA();
+}
+
+function texteIngredientIA(c, k){
+  const dose = analyserDose(c.r.d[k]);
+  return dose.special
+    ? `${c.ing[k]} (${libelleDose(dose, 1)})`
+    : `${libelleDose(dose, 1)} ${nomIngredient(c.ing[k], dose, 1)}`;
+}
+
+function rendreResultatIA(){
+  const zone = document.getElementById("ia-resultat");
+  const bouton = document.getElementById("ia-envoyer");
+  bouton.disabled = IA.enCours;
+  bouton.textContent = IA.enCours ? "L'IA réfléchit…" : "Trouver un cocktail";
+  zone.innerHTML = "";
+  if(IA.enCours){
+    zone.innerHTML = '<div class="chargement" role="status">Recherche en cours, cela peut prendre quelques secondes…</div>';
+    return;
+  }
+  if(IA.erreur){
+    const alerte = document.createElement("div");
+    alerte.className = "ia-erreur";
+    alerte.setAttribute("role", "alert");
+    alerte.textContent = IA.erreur;
+    zone.appendChild(alerte);
+  }
+  if(!IA.proposition || !IA.cle) return;
+
+  const c = IA.proposition;
+  const {manquants} = analyserCocktail(c);
+  const badge = manquants.length === 0
+    ? '<span class="badge ok">Réalisable</span>'
+    : `<span class="badge presque">Il manque ${manquants.length}</span>`;
+  const profils = profilsDe(c);
+  const ingHtml = c.ing.map((i, k)=>`<span class="${etat.possedes.includes(i) ? "possede" : "manque"}">${esc(texteIngredientIA(c, k))}</span>`).join(" · ");
+  const carte = document.createElement("div");
+  carte.className = "carte";
+  carte.innerHTML = `
+    <div class="carte-tete"><h3>${esc(c.n)}</h3>${badge}</div>
+    ${profils.length ? '<div class="profils">' + profils.map((p, i)=>`<span class="pastille${i===0?" dominante":""}">${p}</span>`).join("") + '</div>' : ""}
+    ${c.desc ? `<p class="ia-desc">${esc(c.desc)}</p>` : ""}
+    <div class="liste-ing">${ingHtml}</div>
+    ${IA.horsListe.length ? `<div class="alerte-evite">⚠️ L'IA n'a pas respecté votre sélection : ${esc(IA.horsListe.join(", "))} ne fait pas partie des ingrédients autorisés. Essayez « Autre proposition ».</div>` : ""}
+  `;
+  const actions = document.createElement("div");
+  actions.className = "ia-actions";
+  const creerBouton = (texte, classe, action, desactive)=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = classe;
+    b.textContent = texte;
+    b.disabled = !!desactive;
+    b.addEventListener("click", action);
+    actions.appendChild(b);
+  };
+  creerBouton("Voir la recette", "lien-noter btn-recette", ()=> ouvrirRecette(c));
+  creerBouton(IA.ajoute ? "Ajouté à vos créations ✓" : "Ajouter à mes créations", "lien-noter", ajouterPropositionIA, IA.ajoute);
+  creerBouton("Autre proposition", "lien-noter", ()=> demanderCocktailIA(true));
+  carte.appendChild(actions);
+  zone.appendChild(carte);
+}
+
+function niveauEviteExistant(noteExistante, ing){
+  if(!noteExistante || !noteExistante.evite) return 0;
+  const entry = noteExistante.evite.find(e => (typeof e === "string" ? e : e.ing) === ing);
+  if(!entry) return 0;
+  return typeof entry === "string" ? 1 : (entry.niveau||1);
+}
+
+function construirePanneauNote(c, noteExistante){
+  const tags = c.ing.map(i=>{
+    let etatTag = "";
+    if(noteExistante && (noteExistante.aime||[]).includes(i)) etatTag = "aime";
+    const niv = niveauEviteExistant(noteExistante, i);
+    if(niv===1) etatTag = "evite-leger";
+    if(niv===2) etatTag = "evite-fort";
+    return `<button type="button" class="tag-choix ${etatTag}" data-ing="${esc(i)}">${esc(i)}</button>`;
+  }).join("");
+  return `
+    <div class="panneau-note">
+      <div class="champ">
+        <label>Note</label>
+        <div class="note-range">
+          <input type="range" min="0" max="10" step="1" id="range-${cssId(c.n)}" value="${noteExistante?noteExistante.note:7}">
+          <span class="note-valeur" id="val-${cssId(c.n)}">${noteExistante?noteExistante.note:7}</span>
+        </div>
+      </div>
+      <div class="champ">
+        <label>Ingrédients : cliquez pour dire ce que vous aimez ou évitez (facultatif)</label>
+        <div class="tags-ing" id="tags-${cssId(c.n)}">${tags}</div>
+        <p class="aide-tags">Un clic : j'aime · deux clics : je n'aime pas trop · trois clics : je déteste (proposé beaucoup plus rarement) · quatre clics : neutre</p>
+      </div>
+      <div class="champ">
+        <label>Commentaire (facultatif)</label>
+        <textarea id="commentaire-${cssId(c.n)}">${noteExistante&&noteExistante.commentaire?noteExistante.commentaire:""}</textarea>
+      </div>
+      <button class="btn-sauver" id="sauver-${cssId(c.n)}">Enregistrer</button>
+      <button class="btn-annuler" id="annuler-${cssId(c.n)}">Annuler</button>
+    </div>
+  `;
+}
+function cssId(nom){ return nom.replace(/[^a-zA-Z0-9]/g,"_"); }
+
+function brancherPanneauNote(panneau, c){
+  const id = cssId(c.n);
+  const range = panneau.querySelector(`#range-${id}`);
+  const val = panneau.querySelector(`#val-${id}`);
+  range.addEventListener("input", ()=> val.textContent = range.value);
+
+  const tagsZone = panneau.querySelector(`#tags-${id}`);
+  tagsZone.querySelectorAll(".tag-choix").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      // cycle : neutre -> aime -> évite un peu -> évite beaucoup -> neutre
+      if(btn.classList.contains("aime")){
+        btn.classList.remove("aime"); btn.classList.add("evite-leger");
+      } else if(btn.classList.contains("evite-leger")){
+        btn.classList.remove("evite-leger"); btn.classList.add("evite-fort");
+      } else if(btn.classList.contains("evite-fort")){
+        btn.classList.remove("evite-fort");
+      } else {
+        btn.classList.add("aime");
+      }
+    });
+  });
+
+  panneau.querySelector(`#annuler-${id}`).addEventListener("click", ()=>{
+    panneau.innerHTML = "";
+  });
+
+  panneau.querySelector(`#sauver-${id}`).addEventListener("click", async ()=>{
+    const aime = [...tagsZone.querySelectorAll(".tag-choix.aime")].map(b=>b.dataset.ing);
+    const evite = [
+      ...[...tagsZone.querySelectorAll(".tag-choix.evite-leger")].map(b=>({ing:b.dataset.ing, niveau:1})),
+      ...[...tagsZone.querySelectorAll(".tag-choix.evite-fort")].map(b=>({ing:b.dataset.ing, niveau:2}))
+    ];
+    const commentaire = panneau.querySelector(`#commentaire-${id}`).value.trim();
+    const noteObj = {note: parseInt(range.value,10), aime, evite, commentaire, date: new Date().toISOString()};
+    if(etat.personneActive==="moi"){
+      etat.notesMoi[c.n] = noteObj;
+      await ecrireCle("notes-moi", etat.notesMoi);
+    } else {
+      etat.notesFemme[c.n] = noteObj;
+      await ecrireCle("notes-femme", etat.notesFemme);
+    }
+    rendreCocktails();
+  });
+}
+
+// ---------- Onglet Ajouter ----------
+const profilsAjout = new Set();
+const zoneProfilsAjout = document.getElementById("ajout-profils");
+creerSelecteurProfils(zoneProfilsAjout, profilsAjout, ()=>{});
+
+document.getElementById("btn-ajouter-cocktail").addEventListener("click", async ()=>{
+  const nom = document.getElementById("nouveau-nom").value.trim();
+  const ingBrut = document.getElementById("nouveaux-ingredients").value.trim();
+  const instructions = document.getElementById("nouvelles-instructions").value.trim();
+  if(!nom || !ingBrut) return;
+  const ing = ingBrut.split(",").map(s=>s.trim().toLowerCase()).filter(Boolean);
+
+  let doses = null;
+  const dosesBrut = document.getElementById("nouvelles-doses").value.trim();
+  if(dosesBrut){
+    const morceaux = dosesBrut.split(",").map(normaliserDose);
+    if(morceaux.length !== ing.length || morceaux.includes(null)){
+      afficherStatut(`Doses non reconnues : il en faut une par ingrédient (${ing.length} ici), dans le même ordre, par exemple « 5 cl, 2 traits, 1 c. à café ». Décimales avec un point (1.5 cl).`, false);
+      return;
+    }
+    doses = morceaux;
+  }
+
+  etat.perso.push({n: nom, p: [...profilsAjout].join(" "), ing, instructions, ...(doses ? {r:{d: doses}} : {})});
+  await ecrireCle("cocktails-perso", etat.perso);
+  document.getElementById("nouveau-nom").value = "";
+  document.getElementById("nouveaux-ingredients").value = "";
+  document.getElementById("nouvelles-instructions").value = "";
+  document.getElementById("nouvelles-doses").value = "";
+  profilsAjout.clear();
+  creerSelecteurProfils(zoneProfilsAjout, profilsAjout, ()=>{});
+  rendrePerso();
+  rendreCocktails();
+});
+
+function rendrePerso(){
+  const zone = document.getElementById("liste-perso");
+  zone.innerHTML = "";
+  if(etat.perso.length===0){
+    zone.innerHTML = '<div class="vide">Aucune création ajoutée pour l\'instant.</div>';
+    return;
+  }
+  etat.perso.forEach(c=>{
+    const div = document.createElement("div");
+    div.className = "carte";
+    div.innerHTML = `<div class="carte-tete"><h3>${esc(c.n)}</h3></div><div class="liste-ing">${esc(c.ing.join(" · "))}</div>${c.instructions?`<div class="liste-ing">${esc(c.instructions)}</div>`:""}<p class="aide">Notes aromatiques (la première est la dominante)</p>`;
+    const selecteur = document.createElement("div");
+    selecteur.className = "tags-ing";
+    creerSelecteurProfils(selecteur, new Set(profilsDe(c)), sel=>{
+      c.p = [...sel].join(" ");
+      ecrireCle("cocktails-perso", etat.perso);
+      rendreCocktails();
+    });
+    div.appendChild(selecteur);
+    zone.appendChild(div);
+  });
+}
+
+// ---------- Navigation ----------
+document.querySelectorAll(".btn-personne").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".btn-personne").forEach(b=>b.classList.remove("actif"));
+    btn.classList.add("actif");
+    etat.personneActive = btn.dataset.personne;
+    rendreCocktails();
+    majFormulaireIA();
+  });
+});
+document.querySelectorAll("nav.onglets button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("nav.onglets button").forEach(b=>b.classList.remove("actif"));
+    btn.classList.add("actif");
+    document.querySelectorAll("main > section").forEach(s=>s.classList.remove("actif"));
+    document.getElementById("sec-"+btn.dataset.onglet).classList.add("actif");
+  });
+});
+document.getElementById("ia-restreindre").addEventListener("change", majFormulaireIA);
+document.getElementById("ia-envoyer").addEventListener("click", ()=> demanderCocktailIA(false));
+document.getElementById("recette-fermer").addEventListener("click", fermerRecette);
+document.getElementById("recette-fond").addEventListener("click", e=>{
+  if(e.target.id === "recette-fond") fermerRecette();
+});
+document.addEventListener("keydown", e=>{
+  if(e.key === "Escape" && cocktailOuvert) fermerRecette();
+});
+document.getElementById("filtre-realisable").addEventListener("change", rendreCocktails);
+document.getElementById("filtre-deteste").addEventListener("change", rendreCocktails);
+document.getElementById("tri-select").addEventListener("change", rendreCocktails);
+
+document.getElementById("btn-exporter").addEventListener("click", exporterDonnees);
+document.getElementById("input-importer").addEventListener("change", (e)=>{
+  const fichier = e.target.files[0];
+  if(fichier) importerDonnees(fichier);
+  e.target.value = "";
+});
+
+document.getElementById("sec-bouteilles").classList.add("actif");
+chargerTout();
+
+})();
+</script>
+</body>
+</html>
